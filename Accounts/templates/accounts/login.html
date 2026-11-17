@@ -509,14 +509,14 @@
     }
     .split-login__left { min-height: 100vh; background: #29264f; }
     .split-login__left img.split-bg {
-        opacity: .82;
-        filter: brightness(.7) saturate(.82) contrast(1.04);
+        opacity: .9;
+        filter: brightness(.68) saturate(.72) contrast(1.08);
         transform: scale(1.025);
     }
     .split-login__left::after {
         background:
-            radial-gradient(ellipse at 78% 20%, rgba(154, 137, 240, .42), transparent 40%),
-            linear-gradient(135deg, rgba(26, 25, 66, .78), rgba(54, 46, 119, .72) 54%, rgba(17, 25, 52, .9));
+            radial-gradient(ellipse at 78% 20%, rgba(166, 154, 255, .28), transparent 42%),
+            linear-gradient(115deg, rgba(25, 28, 61, .88), rgba(51, 45, 103, .78) 54%, rgba(18, 31, 55, .91));
     }
     .split-login__left-content { min-height: 100vh; padding: clamp(28px, 4.2vw, 68px); }
     .brand-tagline { font-size: 1.05rem; letter-spacing: .01em; }
@@ -525,11 +525,12 @@
         border-color: rgba(255,255,255,.22);
         box-shadow: 0 12px 28px rgba(11, 10, 38, .2);
     }
-    .hero-copy h1 { max-width: 640px; font-size: clamp(2.1rem, 4.1vw, 3.5rem); line-height: 1.12; }
-    .hero-copy p { max-width: 520px; color: rgba(255,255,255,.84); }
+    .hero-copy h1 { max-width: 640px; color: #fff; font-size: clamp(2.1rem, 4.1vw, 3.5rem); line-height: 1.12; text-shadow: 0 3px 22px rgba(12,15,37,.34); }
+    .hero-copy h1 .hero-highlight { color: #d5d0ff; }
+    .hero-copy p { max-width: 520px; color: rgba(248,249,255,.9); font-size: 1rem; line-height: 1.7; }
     .hero-features { gap: 10px; }
-    .hero-features span { padding: 8px 11px; border: 1px solid rgba(255,255,255,.17); border-radius: 999px; background: rgba(255,255,255,.08); }
-    .hero-features i { color: #c0b8ff; }
+    .hero-features span { padding: 8px 11px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(19,22,53,.32); color: #f5f4ff; }
+    .hero-features i { color: #c9c1ff; }
     .login-visual-card {
         position: absolute;
         z-index: 3;
@@ -540,7 +541,7 @@
         border: 1px solid rgba(255,255,255,.24);
         border-radius: 16px;
         color: #fff;
-        background: rgba(27, 27, 70, .62);
+        background: rgba(27, 30, 66, .78);
         box-shadow: 0 18px 44px rgba(8, 9, 33, .28);
         backdrop-filter: blur(14px);
     }
@@ -554,42 +555,49 @@
     .login-visual-card__items { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
     .login-visual-card__items span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px; background: rgba(255,255,255,.1); font-size: .68rem; }
     .login-visual-card__items i { color: #c0b8ff; }
-    .split-login__right { padding: clamp(24px, 4vw, 58px); background: var(--bg-body); }
-    .split-login__right::before { opacity: .7; }
+    .split-login__right { padding: clamp(24px, 4vw, 58px); background: linear-gradient(145deg, #f7f8fc, #eef0f7); }
+    .split-login__right::before { opacity: .36; }
     .login-form-wrap {
-        max-width: 470px;
-        padding: clamp(26px, 3vw, 42px);
-        border: 1px solid var(--border);
-        border-radius: 22px;
-        background: var(--bg-surface);
-        box-shadow: 0 22px 65px rgba(34, 32, 83, .11);
+        max-width: 480px;
+        padding: clamp(30px, 3.2vw, 46px);
+        border: 1px solid #e3e5ef;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(35, 34, 76, .13);
     }
-    .form-head { margin-bottom: 26px; }
-    .welcome-badge { color: #5142ae; background: #f0edff; border-color: #ded8ff; }
-    .welcome-badge i { color: #6758c7; }
-    .form-head h2 { color: var(--text); font-size: clamp(1.7rem, 2.4vw, 2.15rem); }
-    .form-head h2 .gradient-text { background-image: linear-gradient(135deg, #7869dc, #5142ae); }
-    .form-head p { color: var(--text-muted); }
-    .login-form-wrap .form-label { color: var(--text-secondary); }
+    .form-head { margin-bottom: 30px; }
+    .welcome-badge { color: #484078; background: #f1effb; border-color: #e3e0f4; }
+    .welcome-badge i { color: #6559a9; }
+    .form-head h2 { color: #24233b; font-size: clamp(1.8rem, 2.4vw, 2.25rem); letter-spacing: -.035em; }
+    .form-head h2 .gradient-text { background-image: linear-gradient(135deg, #7569c2, #443984); }
+    .form-head p { color: #73758a; }
+    .login-form-wrap .form-label { color: #414258; font-weight: 600; }
     .input-group-icon .form-control {
-        background: var(--bg-surface-alt);
-        border-color: var(--border);
-        border-radius: 11px;
-        color: var(--text);
+        height: 54px;
+        background: #f8f9fc;
+        border-color: #e2e4ed;
+        border-radius: 12px;
+        color: #27273d;
     }
-    .input-group-icon .form-control:focus { border-color: #8274df; box-shadow: 0 0 0 4px rgba(103,88,199,.14); }
-    .input-group-icon .form-control:focus ~ .input-icon { color: #6758c7; }
-    .login-btn { background: linear-gradient(130deg, #7565d1, #5142ae); box-shadow: 0 10px 22px rgba(81,66,174,.23); }
-    .login-btn::before { background: linear-gradient(130deg, #8577df, #5a4bb8); }
-    .login-extra a { color: #5b4ab4; }
-    .login-extra a:hover { color: #44358f; }
-    .login-foot-links a:hover { color: #5b4ab4; background: rgba(103,88,199,.08); }
+    .input-group-icon .form-control:focus { background: #fff; border-color: #776abb; box-shadow: 0 0 0 4px rgba(103,88,199,.13); }
+    .input-group-icon .form-control:focus ~ .input-icon { color: #6559a9; }
+    .login-btn { min-height: 54px; border-radius: 12px; background: linear-gradient(130deg, #6559a9, #403779); box-shadow: 0 9px 20px rgba(64,55,121,.2); }
+    .login-btn::before { background: linear-gradient(130deg, #766bc0, #50478f); }
+    .login-extra a { color: #51468f; }
+    .login-extra a:hover { color: #39316d; }
+    .login-foot-links a:hover { color: #51468f; background: rgba(103,88,199,.08); }
     .login-foot-links { display: none; }
     .login-access-help { margin: 20px 0 0; color: var(--text-muted); font-size: .82rem; text-align: center; }
-    .security-notice { background: #f6f4ff; border-color: #e2ddfa; color: #514b6b; }
-    .security-notice i, .security-notice strong { color: #6555bd; }
-    [data-theme="dark"] .split-login__right { background: var(--bg-body); }
-    [data-theme="dark"] .login-form-wrap { background: var(--bg-surface); border-color: var(--border); box-shadow: 0 22px 65px rgba(0,0,0,.28); }
+    .security-notice { background: #f5f4fb; border-color: #e5e2f0; color: #55536d; }
+    .security-notice i, .security-notice strong { color: #6559a9; }
+    [data-theme="dark"] .split-login__right { background: linear-gradient(145deg, #111321, #18182a); }
+    [data-theme="dark"] .login-form-wrap { background: #1b1b2d; border-color: #34344a; box-shadow: 0 22px 65px rgba(0,0,0,.36); }
+    [data-theme="dark"] .form-head h2 { color: #f3f2fb; }
+    [data-theme="dark"] .form-head p { color: #aaa9bf; }
+    [data-theme="dark"] .login-form-wrap .form-label { color: #d6d4e5; }
+    [data-theme="dark"] .input-group-icon .form-control { background: #242438; border-color: #3b3b53; color: #f3f2fb; }
+    [data-theme="dark"] .input-group-icon .form-control::placeholder { color: #9291aa; }
+    [data-theme="dark"] .security-notice { background: rgba(123,105,220,.1); border-color: rgba(169,156,255,.2); color: #d0cde2; }
     [data-theme="dark"] .welcome-badge { color: #d2caff; background: rgba(123,105,220,.16); border-color: rgba(169,156,255,.28); }
     [data-theme="dark"] .welcome-badge i { color: #b6aaff; }
     [data-theme="dark"] .input-group-icon .form-control { background: var(--bg-surface-alt); border-color: var(--border); color: var(--text); }
@@ -653,9 +661,8 @@
             </div>
 
             <div class="hero-copy">
-                <h1>Everything your people team needs, in one place.</h1>
+                <h1>Everything your <span class="hero-highlight">people team</span> needs, in one place.</h1>
                 <p>
-                    Attendance, leave, payroll and employee records — all in one place.
                     Manage attendance, leave, payroll, and employee records from one secure workspace.
                 </p>
                 <div class="hero-features mt-4">
