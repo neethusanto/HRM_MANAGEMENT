@@ -22,6 +22,7 @@ urlpatterns = [
     path('hr/delete/<int:pk>/', views.hr_delete, name='hr_delete'),
 
     # Employees
+    path('team-calendar/', views.team_calendar, name='team_calendar'),
     path('employees/', views.employee_list, name='employee_list'),
     path('employees/create/', views.employee_create, name='employee_create'),
     path('employees/bulk-upload/', views.employee_bulk_upload, name='employee_bulk_upload'),

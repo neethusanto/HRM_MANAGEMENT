@@ -320,6 +320,152 @@ def employee_list(request):
 
 @login_required
 @admin_or_hr_required
+def team_calendar(request):
+    """Monthly team attendance and leave overview followed by the team directory."""
+    today = timezone.localdate()
+    try:
+        year = int(request.GET.get('year') or today.year)
+        month = int(request.GET.get('month') or today.month)
+        if year < 2000 or year > 2100 or not 1 <= month <= 12:
+            raise ValueError
+    except (TypeError, ValueError):
+        year, month = today.year, today.month
+
+    month_start = date(year, month, 1)
+    month_end = date(year, month, calendar.monthrange(year, month)[1])
+    previous_month = month_start - timedelta(days=1)
+    next_month = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    employees = list(Employee.objects.filter(status='active').select_related('department').order_by('emp_name'))
+    employee_ids = [employee.pk for employee in employees]
+    attendance_by_key = {
+        (item.employee_id, item.date): item
+        for item in Attendance.objects.filter(
+            employee_id__in=employee_ids, date__gte=month_start, date__lte=month_end,
+        )
+    }
+    approved_leaves = Leave.objects.filter(
+        employee_id__in=employee_ids,
+        status='approved',
+        start_date__lte=month_end,
+        end_date__gte=month_start,
+    ).select_related('employee')
+    leave_by_key = {}
+    for leave in approved_leaves:
+        day = max(leave.start_date, month_start)
+        end = min(leave.end_date, month_end)
+        while day <= end:
+            leave_by_key.setdefault((leave.employee_id, day), leave)
+            day += timedelta(days=1)
+
+    month_days = []
+    _, month_length = calendar.monthrange(year, month)
+    for day_number in range(1, month_length + 1):
+        day = date(year, month, day_number)
+        month_days.append({
+            'date': day,
+            'weekday': day.strftime('%a'),
+            'is_weekend': day.weekday() >= 5,
+        })
+
+    today_attendance = {
+        item.employee_id: item
+        for item in Attendance.objects.filter(employee_id__in=employee_ids, date=today)
+    }
+    today_leave_ids = set(Leave.objects.filter(
+        employee_id__in=employee_ids,
+        status='approved',
+        start_date__lte=today,
+        end_date__gte=today,
+    ).values_list('employee_id', flat=True))
+    on_leave_today = [employee for employee in employees if employee.pk in today_leave_ids]
+    not_in_yet = [
+        employee for employee in employees
+        if employee.pk not in today_leave_ids
+        and not (today_attendance.get(employee.pk) and today_attendance[employee.pk].check_in)
+    ]
+
+    on_time_count = late_count = home_count = pending_count = 0
+    for employee in employees:
+        employee.today_attendance = today_attendance.get(employee.pk)
+        attendance = employee.today_attendance
+        if attendance:
+            if attendance.status == 'present':
+                on_time_count += 1
+            elif attendance.status == 'late':
+                late_count += 1
+            if attendance.work_mode == 'home' and attendance.check_in:
+                home_count += 1
+            if attendance.check_in and attendance.check_out and not attendance.is_verified:
+                pending_count += 1
+
+        employee.calendar_days = []
+        for day_info in month_days:
+            day = day_info['date']
+            record = attendance_by_key.get((employee.pk, day))
+            leave = leave_by_key.get((employee.pk, day))
+            holiday_name = _attendance_holiday_name(day)
+            kind, label, short_label = '', '', ''
+            if day < employee.joining_date:
+                kind, label, short_label = 'not-employed', 'Before start date', ''
+            elif record:
+                if record.work_mode == 'home':
+                    kind, label, short_label = 'wfh', 'Work from home', 'WFH'
+                elif record.status == 'present':
+                    kind, label, short_label = 'present', 'Present', 'P'
+                elif record.status == 'late':
+                    kind, label, short_label = 'late', 'Late arrival', 'L'
+                elif record.status == 'half_day':
+                    kind, label, short_label = 'half-day', 'Half day', '½'
+                elif record.status == 'leave':
+                    kind, label, short_label = 'paid-leave', 'Leave', 'LV'
+                elif record.status == 'absent':
+                    kind, label, short_label = 'absent', 'Absent', 'A'
+                if record.check_in and record.check_out:
+                    label = f'{label} · {record.working_hours}'
+            elif leave and not holiday_name:
+                if leave.leave_type == 'unpaid':
+                    kind, label, short_label = 'unpaid-leave', 'Unpaid leave', 'UL'
+                else:
+                    kind, label, short_label = 'paid-leave', 'Approved leave', 'PL'
+            elif holiday_name:
+                if holiday_name in ('Sunday', 'Second Saturday'):
+                    kind, label, short_label = 'weekly-off', holiday_name, 'WO'
+                else:
+                    kind, label, short_label = 'holiday', holiday_name, 'H'
+            elif day <= today:
+                kind, label, short_label = 'no-attendance', 'No attendance record', '—'
+
+            employee.calendar_days.append({
+                'date': day,
+                'kind': kind,
+                'label': label,
+                'short_label': short_label,
+                'pending_review': bool(record and record.check_in and record.check_out and not record.is_verified),
+                'is_today': day == today,
+            })
+
+    return render(request, 'hr/team_calendar.html', {
+        'employees': employees,
+        'employee_count': len(employees),
+        'month_days': month_days,
+        'month_label': month_start.strftime('%B %Y'),
+        'selected_month': month,
+        'selected_year': year,
+        'previous_month': previous_month,
+        'next_month': next_month,
+        'today': today,
+        'on_leave_today': on_leave_today,
+        'on_leave_ids': today_leave_ids,
+        'not_in_yet': not_in_yet,
+        'on_time_count': on_time_count,
+        'late_count': late_count,
+        'home_count': home_count,
+        'pending_count': pending_count,
+    })
+
+
+@login_required
+@admin_or_hr_required
 def employee_create(request):
     if request.method == 'POST':
         form = EmployeeForm(request.POST, request.FILES)

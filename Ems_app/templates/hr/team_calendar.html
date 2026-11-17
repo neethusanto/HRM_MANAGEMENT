@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block title %}Team Calendar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .team-overview-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-bottom:18px; }
+  .team-overview-card { min-width:0; padding:18px 20px; background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-sm); }
+  .team-overview-card h3 { margin:0 0 14px; font-size:1rem; font-weight:700; }
+  .team-person-strip { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+  .team-person-chip { display:flex; align-items:center; gap:8px; min-width:0; padding:6px 10px 6px 6px; border-radius:999px; background:var(--bg-surface-alt); color:var(--text-secondary); font-size:.8rem; }
+  .team-person-chip span:last-child { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .team-avatar { width:36px; height:36px; display:grid; place-items:center; flex:0 0 auto; border-radius:50%; color:#fff; background:linear-gradient(145deg,#8072db,#5142ae); font-size:.78rem; font-weight:700; }
+  .team-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:22px; }
+  .team-metric { position:relative; min-width:0; padding:16px 18px; background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-xs); }
+  .team-metric::before { content:""; position:absolute; inset:13px auto 13px 0; width:3px; border-radius:0 3px 3px 0; background:var(--metric-color,#6b5bc5); }
+  .team-metric span { display:block; color:var(--text-muted); font-size:.78rem; line-height:1.35; }
+  .team-metric strong { display:block; margin-top:7px; color:var(--text); font-size:1.6rem; line-height:1; }
+  .team-calendar-card { overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--bg-surface); box-shadow:var(--shadow-sm); }
+  .team-calendar-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:17px 20px; border-bottom:1px solid var(--border); }
+  .team-calendar-heading h3 { margin:0; font-size:1.05rem; font-weight:700; }
+  .team-calendar-nav { display:flex; align-items:center; gap:10px; }
+  .team-calendar-nav .month-label { min-width:130px; color:var(--text); font-weight:700; text-align:center; }
+  .team-calendar-nav .btn { min-width:36px; min-height:36px; display:inline-grid; place-items:center; padding:5px 10px; }
+  .team-calendar-scroll { overflow:auto; max-height:68vh; overscroll-behavior:contain; }
+  .team-calendar-table { width:max-content; min-width:100%; border-collapse:separate; border-spacing:0; font-size:.75rem; }
+  .team-calendar-table th,.team-calendar-table td { height:43px; padding:5px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center; }
+  .team-calendar-table thead th { position:sticky; top:0; z-index:3; height:48px; background:var(--bg-surface-alt); color:var(--text-muted); font-weight:600; }
+  .team-calendar-table .team-name-cell { position:sticky; left:0; z-index:2; width:230px; min-width:230px; max-width:230px; padding:7px 12px; background:var(--bg-surface); text-align:left; }
+  .team-calendar-table thead .team-name-cell { z-index:4; background:var(--bg-surface-alt); }
+  .team-calendar-name { display:flex; align-items:center; gap:10px; min-width:0; }
+  .team-calendar-name-text { min-width:0; }
+  .team-calendar-name-text strong,.team-calendar-name-text small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .team-calendar-name-text strong { color:var(--text); font-size:.78rem; }
+  .team-calendar-name-text small { margin-top:2px; color:var(--text-muted); font-size:.67rem; }
+  .team-day-head { width:36px; min-width:36px; }
+  .team-day-head span { display:block; font-size:.62rem; font-weight:500; }
+  .team-day-head strong { display:block; margin-top:1px; color:var(--text-secondary); font-size:.72rem; }
+  .team-day-head.weekend { background:color-mix(in srgb,var(--warning-soft) 55%,var(--bg-surface-alt)); }
+  .team-day-head.today { box-shadow:inset 0 -3px #6758c7; }
+  .team-day-cell { position:relative; width:36px; min-width:36px; }
+  .team-day-mark { display:inline-grid; place-items:center; width:27px; height:27px; border-radius:50%; font-size:.61rem; font-weight:700; }
+  .team-day-cell.kind-wfh .team-day-mark { color:#5b4ab4; background:#eeeaff; }
+  .team-day-cell.kind-present .team-day-mark { color:#167447; background:#e5f7ed; }
+  .team-day-cell.kind-late .team-day-mark { color:#92530c; background:#fff1d0; }
+  .team-day-cell.kind-half-day .team-day-mark { color:#3156a3; background:#e8efff; }
+  .team-day-cell.kind-paid-leave .team-day-mark { color:#1c7481; background:#e2f5f6; }
+  .team-day-cell.kind-unpaid-leave .team-day-mark { color:#6b5a7e; background:#f0eaf5; }
+  .team-day-cell.kind-weekly-off .team-day-mark { color:#8c650b; background:#fff3cf; }
+  .team-day-cell.kind-holiday .team-day-mark { color:#4c7722; background:#eaf4dc; }
+  .team-day-cell.kind-absent .team-day-mark { color:#a63232; background:#fde9e9; }
+  .team-day-cell.kind-no-attendance .team-day-mark { color:#7b8292; background:#f0f2f6; }
+  .team-day-cell.kind-not-employed .team-day-mark { color:transparent; background:transparent; }
+  .team-day-cell.today { background:rgba(103,88,199,.06); }
+  .team-day-cell.pending-review::after { content:""; position:absolute; top:3px; right:3px; width:6px; height:6px; border-radius:50%; background:#edaa30; }
+  .team-calendar-legend { display:flex; flex-wrap:wrap; gap:9px 16px; padding:14px 18px; border-top:1px solid var(--border); color:var(--text-muted); font-size:.72rem; }
+  .team-legend-item { display:inline-flex; align-items:center; gap:6px; }
+  .team-legend-dot { width:9px; height:9px; border-radius:50%; background:var(--legend-color); }
+  .team-section-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:30px 0 16px; }
+  .team-section-heading h3 { margin:0; font-size:1.2rem; font-weight:700; }
+  .team-section-heading p { margin:3px 0 0; color:var(--text-muted); font-size:.82rem; }
+  .team-directory-card { height:100%; padding:18px; border:1px solid var(--border); border-radius:13px; background:var(--bg-surface); box-shadow:var(--shadow-xs); transition:transform .16s ease,box-shadow .16s ease; }
+  .team-directory-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+  .team-directory-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .team-directory-identity { display:flex; align-items:center; gap:12px; min-width:0; }
+  .team-directory-identity h4 { margin:0; overflow:hidden; color:var(--text); font-size:.92rem; text-overflow:ellipsis; white-space:nowrap; }
+  .team-directory-identity p { margin:4px 0 0; color:var(--text-muted); font-size:.72rem; }
+  .team-directory-meta { display:grid; gap:7px; margin-top:16px; color:var(--text-secondary); font-size:.76rem; }
+  .team-directory-meta span { min-width:0; overflow-wrap:anywhere; }
+  .team-directory-meta i { width:15px; margin-right:5px; color:var(--accent); }
+  [data-theme="dark"] .team-day-cell.kind-wfh .team-day-mark { color:#d0c8ff; background:rgba(123,105,220,.22); }
+  [data-theme="dark"] .team-day-cell.kind-present .team-day-mark { color:#8ce2b2; background:rgba(22,130,74,.2); }
+  [data-theme="dark"] .team-day-cell.kind-late .team-day-mark { color:#ffd982; background:rgba(153,99,9,.22); }
+  [data-theme="dark"] .team-day-cell.kind-half-day .team-day-mark { color:#b5c8ff; background:rgba(68,102,183,.24); }
+  [data-theme="dark"] .team-day-cell.kind-paid-leave .team-day-mark { color:#94e1e5; background:rgba(30,125,135,.2); }
+  [data-theme="dark"] .team-day-cell.kind-unpaid-leave .team-day-mark { color:#d1c1e0; background:rgba(111,83,133,.22); }
+  [data-theme="dark"] .team-day-cell.kind-weekly-off .team-day-mark { color:#ffd982; background:rgba(153,99,9,.18); }
+  [data-theme="dark"] .team-day-cell.kind-holiday .team-day-mark { color:#b4dc86; background:rgba(89,130,40,.2); }
+  [data-theme="dark"] .team-day-cell.kind-absent .team-day-mark { color:#ffaaaa; background:rgba(170,45,45,.2); }
+  [data-theme="dark"] .team-day-cell.kind-no-attendance .team-day-mark { color:#c0c2d1; background:#2b2c41; }
+  @media(max-width:900px) {
+    .team-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .team-calendar-scroll { max-height:62vh; }
+  }
+  @media(max-width:650px) {
+    .team-overview-grid { grid-template-columns:1fr; }
+    .team-metrics { gap:9px; }
+    .team-metric { padding:14px 14px 14px 16px; }
+    .team-calendar-heading { align-items:flex-start; padding:14px; }
+    .team-calendar-table .team-name-cell { width:180px; min-width:180px; max-width:180px; }
+    .team-day-head,.team-day-cell { width:33px; min-width:33px; }
+    .team-day-mark { width:25px; height:25px; }
+    .team-directory-card { padding:15px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Team Calendar</h2>
+    <p class="text-muted mb-0">Attendance, leave, weekly offs, and holidays for {{ employee_count }} active team members.</p>
+  </div>
+  <a href="{% url 'Ems_app:employee_list' %}" class="btn btn-outline-primary"><i class="bi bi-people me-1"></i>Employee Directory</a>
+</div>
+
+<div class="team-overview-grid">
+  <section class="team-overview-card">
+    <h3><i class="bi bi-calendar2-check me-2 text-primary"></i>Who is on leave today</h3>
+    {% if on_leave_today %}
+      <div class="team-person-strip">
+        {% for employee in on_leave_today %}
+          <span class="team-person-chip"><span class="team-avatar">{{ employee.emp_name|first|upper }}</span><span>{{ employee.emp_name }}</span></span>
+        {% endfor %}
+      </div>
+    {% else %}<div class="alert alert-light border mb-0 py-2">No employee is on approved leave today.</div>{% endif %}
+  </section>
+  <section class="team-overview-card">
+    <h3><i class="bi bi-hourglass-split me-2 text-warning"></i>Not checked in yet</h3>
+    {% if not_in_yet %}
+      <div class="team-person-strip">
+        {% for employee in not_in_yet|slice:":8" %}
+          <span class="team-person-chip"><span class="team-avatar">{{ employee.emp_name|first|upper }}</span><span>{{ employee.emp_name }}</span></span>
+        {% endfor %}
+        {% if not_in_yet|length > 8 %}<span class="small text-muted">+{{ not_in_yet|length|add:"-8" }} more</span>{% endif %}
+      </div>
+    {% else %}<div class="alert alert-success mb-0 py-2">Everyone has checked in or is on approved leave.</div>{% endif %}
+  </section>
+</div>
+
+<div class="team-metrics">
+  <div class="team-metric" style="--metric-color:#48b9a8"><span>Present on time today</span><strong>{{ on_time_count }}</strong></div>
+  <div class="team-metric" style="--metric-color:#e3a234"><span>Late arrivals today</span><strong>{{ late_count }}</strong></div>
+  <div class="team-metric" style="--metric-color:#7c6bd2"><span>Working from home today</span><strong>{{ home_count }}</strong></div>
+  <div class="team-metric" style="--metric-color:#dd7b83"><span>Completed days awaiting HR review</span><strong>{{ pending_count }}</strong></div>
+</div>
+
+<section class="team-calendar-card" aria-label="Monthly team calendar">
+  <div class="team-calendar-heading">
+    <div><h3>Team calendar</h3><div class="small text-muted mt-1">Select a month to review the team's daily status.</div></div>
+    <div class="team-calendar-nav">
+      <a class="btn btn-outline-primary" href="?month={{ previous_month.month }}&year={{ previous_month.year }}" aria-label="Previous month"><i class="bi bi-chevron-left"></i></a>
+      <span class="month-label">{{ month_label }}</span>
+      <a class="btn btn-outline-primary" href="?month={{ next_month.month }}&year={{ next_month.year }}" aria-label="Next month"><i class="bi bi-chevron-right"></i></a>
+    </div>
+  </div>
+  <div class="team-calendar-scroll">
+    <table class="team-calendar-table">
+      <thead><tr>
+        <th class="team-name-cell">Team member</th>
+        {% for day in month_days %}<th class="team-day-head {% if day.is_weekend %}weekend{% endif %} {% if day.date == today %}today{% endif %}" title="{{ day.date|date:'l, d M Y' }}"><span>{{ day.weekday }}</span><strong>{{ day.date.day }}</strong></th>{% endfor %}
+      </tr></thead>
+      <tbody>
+        {% for employee in employees %}
+        <tr>
+          <th class="team-name-cell" scope="row">
+            <a class="team-calendar-name text-decoration-none" href="{% url 'Ems_app:employee_monthly_attendance' employee.pk %}?month={{ selected_month }}&year={{ selected_year }}">
+              <span class="team-avatar">{{ employee.emp_name|first|upper }}</span>
+              <span class="team-calendar-name-text"><strong>{{ employee.emp_name }}</strong><small>{{ employee.department.dept_name|default:'Unassigned' }}</small></span>
+            </a>
+          </th>
+          {% for cell in employee.calendar_days %}
+          <td class="team-day-cell kind-{{ cell.kind }} {% if cell.is_today %}today{% endif %} {% if cell.pending_review %}pending-review{% endif %}" title="{{ cell.date|date:'d M Y' }}{% if cell.label %} · {{ cell.label }}{% endif %}{% if cell.pending_review %} · Awaiting HR verification{% endif %}">
+            {% if cell.short_label %}<span class="team-day-mark">{{ cell.short_label }}</span>{% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% empty %}<tr><td colspan="32" class="text-center text-muted py-4">No active team members found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="team-calendar-legend">
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#7665ce"></i>Work from home</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#44a977"></i>Present</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#e0a131"></i>Late</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#4f75c6"></i>Half day</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#55aeb4"></i>Approved leave</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#d5a72e"></i>Weekly off</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#79a84c"></i>Holiday</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#d65e64"></i>Absent</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#9aa1af"></i>No attendance</span>
+    <span class="team-legend-item"><i class="team-legend-dot" style="--legend-color:#edaa30"></i>Dot = awaiting HR review</span>
+  </div>
+</section>
+
+<section class="team-section-heading">
+  <div><h3>Team <span class="text-muted">({{ employee_count }})</span></h3><p>Team members and today's check-in status.</p></div>
+</section>
+<div class="row g-3">
+  {% for employee in employees %}
+  <div class="col-12 col-md-6 col-xxl-4">
+    <article class="team-directory-card">
+      <div class="team-directory-top">
+        <div class="team-directory-identity">
+          <span class="team-avatar">{{ employee.emp_name|first|upper }}</span>
+          <div class="min-w-0"><h4>{{ employee.emp_name }}</h4><p>{{ employee.designation|default:'Employee' }}</p></div>
+        </div>
+        {% if employee.pk in on_leave_ids %}<span class="status-chip status-approved">On leave</span>
+        {% elif employee.today_attendance and employee.today_attendance.check_in %}
+          {% if employee.today_attendance.work_mode == 'home' %}<span class="status-chip status-neutral">WFH</span>
+          {% elif employee.today_attendance.check_out %}<span class="status-chip status-neutral">Checked out</span>
+          {% else %}<span class="status-chip status-approved">In office</span>{% endif %}
+        {% else %}<span class="status-chip status-pending">Not in yet</span>{% endif %}
+      </div>
+      <div class="team-directory-meta">
+        <span><i class="bi bi-geo-alt"></i>{{ employee.location|default:'Operational Office' }}</span>
+        <span><i class="bi bi-diagram-3"></i>{{ employee.department.dept_name|default:'Unassigned' }}</span>
+        <span><i class="bi bi-envelope"></i><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center gap-2 mt-3 pt-3 border-top">
+        <span class="small text-muted">{% if employee.today_attendance and employee.today_attendance.check_in %}In {{ employee.today_attendance.check_in|date:'H:i' }}{% if employee.today_attendance.check_out %} · Out {{ employee.today_attendance.check_out|date:'H:i' }}{% endif %}{% else %}{{ employee.get_status_display }}{% endif %}</span>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'Ems_app:employee_monthly_attendance' employee.pk %}?month={{ selected_month }}&year={{ selected_year }}"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
+      </div>
+    </article>
+  </div>
+  {% empty %}<div class="col-12"><div class="team-directory-card text-center text-muted">No active team members found.</div></div>{% endfor %}
+</div>
+{% endblock %}
