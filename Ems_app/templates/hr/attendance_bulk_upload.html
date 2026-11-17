@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Upload Attendance Sheet{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Upload Attendance Sheet</h2>
+        <p class="text-muted mb-0">Biometric Excel/CSV sheet → auto-calculate each employee's attendance</p>
+    </div>
+    <a href="{% url 'Ems_app:attendance_download_template' %}" class="btn btn-outline-primary">
+        <i class="bi bi-download"></i> Download Template
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+
+                <div class="alert alert-info small">
+                    <strong>Accepted formats:</strong> .xlsx or .csv<br>
+                    <strong>Employee identifier:</strong> any of
+                    <code>employee_code</code>, <code>pin</code>, <code>emp_id</code>,
+                    <code>email</code>.<br>
+                    <strong>Date:</strong> <code>date</code><br>
+                    <strong>Times:</strong> <code>check_in</code> and <code>check_out</code>
+                    OR a single <code>punch_time</code> column (multiple rows/day OK).<br>
+                    <hr class="my-2">
+                    <strong>Rules:</strong>
+                    <ul class="mb-0 ps-3">
+                        <li>Check-in ≤ 09:40 → <span class="badge bg-success">Present</span></li>
+                        <li>Check-in &gt; 09:40 → <span class="badge bg-warning text-dark">Late</span></li>
+                        <li>Working hours &lt; 4 → <span class="badge bg-info">Half-Day</span></li>
+                        <li>No check-in → <span class="badge bg-danger">Absent</span></li>
+                        <li>Existing "Leave" records are kept untouched</li>
+                    </ul>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Attendance File</label>
+                        <input type="file" name="attendance_file" class="form-control"
+                               accept=".xlsx,.csv" required>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload &amp; Process
+                        </button>
+                        <a href="{% url 'Ems_app:attendance_list' %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

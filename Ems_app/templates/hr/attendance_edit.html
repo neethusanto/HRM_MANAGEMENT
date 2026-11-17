@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Attendance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Edit Attendance — {{ attendance.employee.emp_name }} ({{ attendance.date|date:"M d, Y" }})</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Check In</label>
+                        <input type="datetime-local" name="check_in" class="form-control"
+                               value="{{ attendance.check_in|date:'Y-m-d\TH:i' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Check Out</label>
+                        <input type="datetime-local" name="check_out" class="form-control"
+                               value="{{ attendance.check_out|date:'Y-m-d\TH:i' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control">
+                            <option value="present" {% if attendance.status == 'present' %}selected{% endif %}>Present</option>
+                            <option value="absent" {% if attendance.status == 'absent' %}selected{% endif %}>Absent</option>
+                            <option value="late" {% if attendance.status == 'late' %}selected{% endif %}>Late</option>
+                            <option value="half_day" {% if attendance.status == 'half_day' %}selected{% endif %}>Half-Day</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{% url 'Ems_app:attendance_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

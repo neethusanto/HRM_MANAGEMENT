@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Salary{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">My Salary History</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Basic Salary</th>
+                        <th>Bonus</th>
+                        <th>Deductions</th>
+                        <th>Net Salary</th>
+                        <th class="text-end">Payslip</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for salary in salaries %}
+                        <tr>
+                            <td>{{ salary.salary_month|date:"M Y" }}</td>
+                            <td>₹ {{ salary.basic_salary|floatformat:2 }}</td>
+                            <td>₹ {{ salary.bonus|floatformat:2 }}</td>
+                            <td>₹ {{ salary.deductions|floatformat:2 }}</td>
+                            <td><strong>&#8377; {{ salary.calculated_net_salary|floatformat:2 }}</strong></td>
+                            <td class="text-end">
+                                {% if salary.payslip_request.status == 'approved' %}
+                                <a href="{% url 'Ems_app:salary_payslip' salary.pk %}"
+                                   class="btn btn-sm btn-info text-white"
+                                   target="_blank"
+                                   title="View Payslip">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                <a href="{% url 'Ems_app:salary_payslip_pdf' salary.pk %}"
+                                   class="btn btn-sm btn-danger"
+                                   title="Download PDF">
+                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                </a>
+                                {% elif salary.payslip_request.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Request pending</span>
+                                {% else %}
+                                    <form method="post" action="{% url 'Ems_app:payslip_request_create' salary.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-primary" type="submit">Request payslip</button>
+                                    </form>
+                                {% endif %}
+                                {% if salary.payslip_request.response %}<div class="small text-muted mt-1">HR: {{ salary.payslip_request.response }}</div>{% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No salary records found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

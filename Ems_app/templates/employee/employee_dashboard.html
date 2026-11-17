@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Welcome, {{ employee.emp_name }}!</h2>
+        <p class="text-muted mb-0">
+            {{ employee.designation|default:"Employee" }} &middot; {{ employee.department.dept_name|default:"No Department" }} &middot; {{ employee.location|default:"Operational Office" }}
+        </p>
+    </div>
+</div>
+
+{% include 'employee/_attendance_clock.html' with clock_attendance=today_attendance on_leave=today_leave %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h5 class="mb-1">{{ salary_month_label }} attendance pay</h5>
+            <p class="text-muted mb-0">Calculated from attendance verified by HR, against your monthly salary.</p>
+        </div>
+        <div class="text-end">
+            <div class="fs-3 fw-bold text-primary">&#8377;{{ verified_month_salary|floatformat:2 }}</div>
+            <small class="text-muted">{% if pending_verification_count %}{{ pending_verification_count }} completed day(s) awaiting HR verification{% else %}Verified attendance only{% endif %}</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-title">Present Days</div>
+                    <h2 class="mb-0">{{ total_present }}</h2>
+                </div>
+                <i class="bi bi-check-circle-fill fs-1"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-title">Absent Days</div>
+                    <h2 class="mb-0">{{ total_absent }}</h2>
+                </div>
+                <i class="bi bi-x-circle-fill fs-1"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-title">Total Leaves</div>
+                    <h2 class="mb-0">{{ total_leaves }}</h2>
+                </div>
+                <i class="bi bi-calendar-heart-fill fs-1"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-title">Pending Leaves</div>
+                    <h2 class="mb-0">{{ pending_leaves }}</h2>
+                </div>
+                <i class="bi bi-hourglass-split fs-1"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar2-check text-primary"></i> Recent Attendance</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group mb-3">
+                    {% for att in recent_attendance %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ att.date|date:"M d, Y" }}</strong>
+                                <small class="text-muted d-block">
+                                    In: {{ att.check_in|time:"H:i"|default:"–" }} | Out: {{ att.check_out|time:"H:i"|default:"–" }}
+                                </small>
+                            </div>
+                            <span class="badge {% if att.status == 'present' %}bg-success{% elif att.status == 'absent' %}bg-danger{% elif att.status == 'late' %}bg-warning{% else %}bg-info{% endif %}">
+                                {{ att.get_status_display }}
+                            </span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No attendance records found.</p>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'Ems_app:employee_attendance' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-right"></i> View All Attendance
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-heart text-info"></i> Recent Leave Requests</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group mb-3">
+                    {% for leave in recent_leaves %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ leave.get_leave_type_display }}</strong>
+                                    <small class="text-muted d-block">{{ leave.start_date|date:"M d" }} – {{ leave.end_date|date:"M d, Y" }}</small>
+                                </div>
+                                <span class="badge {% if leave.status == 'pending' %}bg-warning{% elif leave.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ leave.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No leave requests found.</p>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'Ems_app:leave_list' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-right"></i> View All Leaves
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

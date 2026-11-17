@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees{% endblock %}
+
+{% block extra_css %}
+<style>
+  .employee-card { height:100%; border:1px solid #e5eaf1; border-radius:16px; background:#fff; transition:box-shadow .18s, transform .18s; }
+  .employee-card:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(15,23,42,.08); }
+  .employee-avatar { width:50px; height:50px; border-radius:50%; display:grid; place-items:center; background:#eaf1ff; color:#1d4ed8; font-weight:700; font-size:1.1rem; }
+  .employee-meta { color:#64748b; font-size:.88rem; }
+  .presence-pill { border-radius:999px; padding:.35rem .65rem; font-size:.76rem; font-weight:700; white-space:nowrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div>
+    <h2>Employee Directory</h2>
+    <p class="text-muted mb-0">{{ employee_count }} employee{{ employee_count|pluralize }} · Live attendance for {{ today|date:"d M Y" }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'Ems_app:employee_bulk_upload' %}" class="btn btn-outline-primary"><i class="bi bi-upload"></i> Import team</a>
+    <a href="{% url 'Ems_app:employee_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Employee</a>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small">Search team</label>
+        <input type="search" name="name" value="{{ name_q }}" class="form-control" placeholder="Name or email">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small">Department</label>
+        <select name="department" class="form-select">
+          <option value="">All departments</option>
+          {% for d in departments %}<option value="{{ d.pk }}" {% if selected_dept == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.dept_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Search</button>
+        <a class="btn btn-outline-secondary" href="{% url 'Ems_app:employee_list' %}">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for emp in employees %}
+  <div class="col-12 col-md-6 col-xl-4">
+    <article class="employee-card p-3">
+      <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="employee-avatar">{{ emp.emp_name|first|upper }}</div>
+          <div>
+            <h5 class="mb-1">{{ emp.emp_name }}</h5>
+            <div class="employee-meta">{{ emp.designation|default:"Employee" }}</div>
+          </div>
+        </div>
+        {% if emp.today_attendance and emp.today_attendance.check_in %}
+          {% if emp.today_attendance.check_out %}<span class="presence-pill bg-secondary-subtle text-secondary">Checked Out</span>
+          {% elif emp.today_attendance.work_mode == 'home' %}<span class="presence-pill bg-info-subtle text-info-emphasis">Working Remotely</span>
+          {% else %}<span class="presence-pill bg-success-subtle text-success">In Office</span>{% endif %}
+        {% else %}<span class="presence-pill bg-light text-secondary border">Not In Yet</span>{% endif %}
+      </div>
+      <div class="employee-meta d-grid gap-2">
+        <div><i class="bi bi-geo-alt me-2"></i>Location: {{ emp.location|default:"Operational Office" }}</div>
+        <div><i class="bi bi-diagram-3 me-2"></i>Department: {{ emp.department.dept_name|default:"Unassigned" }}</div>
+        <div><i class="bi bi-envelope me-2"></i><a href="mailto:{{ emp.email }}">{{ emp.email }}</a></div>
+        {% if emp.today_attendance and emp.today_attendance.check_in %}<div><i class="bi bi-clock me-2"></i>Check-in: {{ emp.today_attendance.check_in|date:"H:i" }}{% if emp.today_attendance.check_out %} · Check-out: {{ emp.today_attendance.check_out|date:"H:i" }}{% endif %}</div>{% endif %}
+      </div>
+      <div class="d-flex justify-content-between align-items-center border-top mt-3 pt-3">
+        <span class="badge {% if emp.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ emp.get_status_display }}</span>
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'Ems_app:employee_monthly_attendance' emp.pk %}" title="Attendance log"><i class="bi bi-calendar-check"></i> Attendance</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'Ems_app:employee_edit' emp.pk %}" title="Edit employee"><i class="bi bi-pencil"></i></a>
+        </div>
+      </div>
+    </article>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="card border-0"><div class="card-body text-center text-muted py-5">No employees found.</div></div></div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ employee.emp_name }} — {{ month_label }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>{{ employee.emp_name }}</h2>
+        <p class="text-muted mb-0">
+            {{ employee.employee_code|default:employee.emp_id }} &middot;
+            {{ employee.designation|default:"—" }} &middot;
+            {{ employee.department.dept_name|default:"No Department" }} &middot;
+            {{ employee.location|default:"Operational Office" }}
+        </p>
+    </div>
+    <div class="d-flex gap-2 align-items-end flex-wrap">
+        <!-- Month / Year picker — reloads same page -->
+        <form method="get"
+              action="{% url 'Ems_app:employee_monthly_attendance' employee.pk %}"
+              class="d-flex gap-2 align-items-end">
+            <div>
+                <label class="form-label small mb-0">Month</label>
+                <select name="month" class="form-select form-select-sm"
+                        onchange="this.form.submit()">
+                    {% for num, name in all_months %}
+                        <option value="{{ num }}"
+                            {% if num == selected_month %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label small mb-0">Year</label>
+                <select name="year" class="form-select form-select-sm"
+                        onchange="this.form.submit()">
+                    {% for y in all_years %}
+                        <option value="{{ y }}"
+                            {% if y == selected_year %}selected{% endif %}>
+                            {{ y }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-funnel"></i> View
+            </button>
+        </form>
+
+        <a href="{% url 'Ems_app:attendance_list' %}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <a href="{% url 'Ems_app:employee_attendance_employee_calendar' employee.pk %}?month={{ selected_month }}&year={{ selected_year }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-calendar3"></i> Calendar
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================
+     EMPLOYEE DETAILS CARD
+     ============================================================ -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <table class="table table-sm mb-0">
+                    <tr><th width="40%">Employee Code</th><td>{{ employee.employee_code|default:"—" }}</td></tr>
+                    <tr><th>Email</th><td>{{ employee.email }}</td></tr>
+                    <tr><th>Phone</th><td>{{ employee.phone|default:"—" }}</td></tr>
+                    <tr><th>Department</th><td>{{ employee.department.dept_name|default:"—" }}</td></tr>
+                    <tr><th>Designation</th><td>{{ employee.designation|default:"—" }}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm mb-0">
+                    <tr><th width="40%">Joining Date</th><td>{{ employee.joining_date|date:"d-m-Y" }}</td></tr>
+                    <tr><th>Experience</th><td>{{ employee.experience|default:"—" }}</td></tr>
+                    <tr><th>Current Salary</th><td>₹ {{ employee.current_salary|floatformat:2 }}</td></tr>
+                    <tr><th>Status</th>
+                        <td>
+                            <span class="badge {% if employee.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ employee.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr><th>Report Period</th>
+                        <td><strong>{{ month_label }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MONTHLY SUMMARY TILES
+     ============================================================ -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="card-title">Present</div>
+                <h2 class="mb-0">{{ summary.present }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <div class="card-title">Absent</div>
+                <h2 class="mb-0">{{ summary.absent }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="card-title">Late</div>
+                <h2 class="mb-0">{{ summary.late }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="card-title">Half-Day</div>
+                <h2 class="mb-0">{{ summary.half_day }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     TOTAL WORKING HOURS + DOWNLOAD PAYSLIP BUTTON
+     ============================================================ -->
+<div class="card mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <span class="text-muted small">Total Working Hours (this month)</span>
+            <h3 class="mb-0"><i class="bi bi-clock-history"></i> {{ total_working_hours }}</h3>
+        </div>
+        <div>
+            <span class="text-muted small">Verified attendance pay</span>
+            <h3 class="mb-0">&#8377; {{ verified_attendance_salary|floatformat:2 }}</h3>
+            {% if pending_verification_count %}<small class="text-warning-emphasis">{{ pending_verification_count }} completed day(s) awaiting verification</small>{% endif %}
+        </div>
+        {% if salary %}
+            <a href="{% url 'Ems_app:salary_payslip' salary.pk %}"
+               class="btn btn-success" target="_blank">
+                <i class="bi bi-download"></i> Download Salary Slip
+            </a>
+        {% else %}
+            <span class="text-muted small">
+                <i class="bi bi-info-circle"></i> No salary record for {{ month_label }}
+            </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================
+     FULL MONTH ATTENDANCE TABLE
+     ============================================================ -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="bi bi-calendar2-check text-primary"></i> Attendance — {{ month_label }}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Working Hours</th>
+                        <th>Status</th>
+                        <th>Work mode</th>
+                        <th>HR review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                        <tr>
+                            <td><strong>{{ att.date|date:"d-m-Y" }}</strong></td>
+                            <td>{{ att.date|date:"D" }}</td>
+                            <td>{% if att.check_in %}{{ att.check_in|date:"H:i" }}{% else %}—{% endif %}</td>
+                            <td>{% if att.check_out %}{{ att.check_out|date:"H:i" }}{% else %}—{% endif %}</td>
+                            <td>{{ att.working_hours_hhmm }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if att.status == 'present' %}bg-success
+                                    {% elif att.status == 'absent' %}bg-danger
+                                    {% elif att.status == 'late' %}bg-warning
+                                    {% elif att.status == 'half_day' %}bg-info
+                                    {% elif att.status == 'leave' %}bg-secondary
+                                    {% endif %}">
+                                    {{ att.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ att.get_work_mode_display }}</td>
+                            <td>
+                                {% if att.is_verified %}<span class="text-success">Verified</span>
+                                {% elif att.check_in and att.check_out %}
+                                    <form method="post" action="{% url 'Ems_app:attendance_verify' att.pk %}">
+                                        {% csrf_token %}<button type="submit" class="btn btn-sm btn-success">Verify</button>
+                                    </form>
+                                {% else %}<span class="text-muted">Pending checkout</span>{% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No attendance records for {{ month_label }}.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     LEAVE RECORDS (if any)
+     ============================================================ -->
+{% if leaves %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="bi bi-calendar-heart text-primary"></i> Leave Requests — {{ month_label }}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Days</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th>Deduction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lv in leaves %}
+                        <tr>
+                            <td>{{ lv.get_leave_type_display }}</td>
+                            <td>{{ lv.days }}</td>
+                            <td>{{ lv.start_date|date:"d-m-Y" }}</td>
+                            <td>{{ lv.end_date|date:"d-m-Y" }}</td>
+                            <td>
+                                <span class="badge {% if lv.status == 'pending' %}bg-warning{% elif lv.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ lv.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if lv.salary_deduction > 0 %}
+                                    <span class="text-danger fw-bold">₹ {{ lv.salary_deduction|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-muted">₹ 0</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

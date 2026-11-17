@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Leave Management</h2>
+        <p class="text-muted mb-0">Review and process employee leave requests</p>
+    </div>
+</div>
+
+<div class="leave-summary-grid mb-4">
+    <div class="leave-summary-card"><span>Needs review</span><strong>{{ pending_count }}</strong></div>
+    <div class="leave-summary-card"><span>Approved</span><strong>{{ approved_count }}</strong></div>
+    <div class="leave-summary-card"><span>Rejected</span><strong>{{ rejected_count }}</strong></div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave type</th>
+                        <th>Days</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Request / Reply</th>
+                        <th>Status</th>
+                        <th>Deduction</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                        <tr>
+                            <td><strong>{{ leave.employee.emp_name }}</strong></td>
+                            <td>{{ leave.get_leave_type_display }}</td>
+                            <td>{{ leave.days }}</td>
+                            <td>{{ leave.start_date|date:"d-m-Y" }}</td>
+                            <td>{{ leave.end_date|date:"d-m-Y" }}</td>
+                            <td>
+                                <div>{{ leave.reason|truncatechars:55|default:"No reason provided" }}</div>
+                                {% if leave.review_response %}<small class="leave-list-reply"><i class="bi bi-chat-left-text me-1"></i>{{ leave.review_response|truncatechars:70 }}</small>{% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if leave.status == 'pending' %}bg-warning{% elif leave.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ leave.get_status_display }}
+                                </span>
+                            </td>
+                            {# Show salary deduction only when > 0 (excess casual leave) #}
+                            <td>
+                                {% if leave.salary_deduction > 0 %}
+                                    <span class="text-danger fw-bold">₹ {{ leave.salary_deduction|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-muted">₹ 0</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end action-buttons">
+                                <a href="{% url 'Ems_app:leave_detail' leave.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-chat-left-text me-1"></i>Review &amp; reply
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                No leave requests found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

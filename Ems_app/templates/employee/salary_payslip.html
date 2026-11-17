@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payslip - {{ employee.emp_name }} - {{ salary.salary_month|date:"F Y" }}</title>
+<style>
+  :root { --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f9fafb; --brand:#2563eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f3f4f6; font-family: Arial, Helvetica, sans-serif; color:var(--ink); }
+  .payslip { width: 210mm; min-height: 297mm; margin: 20px auto; background:#fff; padding: 16mm; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  .header { display:flex; justify-content:space-between; gap:16px; border-bottom:2px solid var(--brand); padding-bottom:12px; }
+  .company { font-size:20px; font-weight:700; }
+  .muted { color:var(--muted); font-size:12px; }
+  .title { text-align:center; margin:18px 0; font-size:16px; font-weight:700; letter-spacing:.5px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px 24px; margin-bottom:16px; }
+  .box { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:10px; }
+  .box h3 { margin:0 0 8px; font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:.5px; }
+  .row { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; border-bottom:1px dotted #f0f0f0; }
+  .row:last-child { border-bottom:none; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
+  th, td { border:1px solid var(--line); padding:8px; text-align:left; }
+  th { background:var(--bg); font-size:11px; text-transform:uppercase; color:var(--muted); }
+  td.num, th.num { text-align:right; font-variant-numeric: tabular-nums; }
+  .total td { font-weight:700; background:#f3f4f6; }
+  .net { margin-top:16px; display:flex; justify-content:space-between; align-items:center; background:#eff6ff; border:1px solid #bfdbfe; padding:14px; border-radius:6px; }
+  .net .amount { font-size:22px; font-weight:800; color:var(--brand); }
+  .footer { margin-top:20px; border-top:1px solid var(--line); padding-top:10px; font-size:10px; color:var(--muted); display:flex; justify-content:space-between; gap:16px; }
+  .toolbar { position: fixed; top: 16px; right: 16px; display:flex; gap:8px; z-index:1000; }
+  .toolbar button, .toolbar a { padding:8px 14px; border-radius:6px; border:none; cursor:pointer; font-size:13px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary { background:var(--brand); color:#fff; }
+  .btn-secondary { background:#e5e7eb; color:#1f2937; }
+  .badge-paid { background:#dcfce7; color:#166534; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; }
+  @media print {
+    body { background:#fff; }
+    .payslip { margin:0; box-shadow:none; width:auto; min-height:auto; padding:12mm; }
+    .toolbar { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <a class="btn-primary" href="{% url 'Ems_app:salary_payslip_pdf' salary.pk %}">
+    &#11015; Download PDF
+  </a>
+  <button class="btn-secondary" onclick="window.print()">&#128438; Print / Save PDF</button>
+  <a class="btn-secondary" href="{% url 'Ems_app:salary_list' %}">&#8592; Back to Salary</a>
+</div>
+
+<div class="payslip">
+  <div class="header">
+    <div>
+      <div class="company">Knovista Technologies Pvt. Ltd.</div>
+      <div class="muted">Lulu Twin Tower, Infopark, Kochi, India<br>info@knovista.in &nbsp;|&nbsp; +91 80 1234 5678</div>
+    </div>
+    <div style="text-align:right">
+      <div class="company">Payslip</div>
+      <div class="muted">
+        {{ salary.salary_month|date:"F Y" }}<br>
+        Payslip No: PS-{{ salary.salary_id|stringformat:"04d" }}<br>
+        Issue Date: {{ generated_on|date:"d-M-Y" }}
+      </div>
+    </div>
+  </div>
+
+  <div class="title">
+    SALARY SLIP FOR THE MONTH OF {{ salary.salary_month|date:"F Y"|upper }}
+  </div>
+
+  <div class="grid">
+    {# ---- Employee Details ---- #}
+    <div class="box">
+      <h3>Employee Details</h3>
+      <div class="row"><span>Name</span><strong>{{ employee.emp_name }}</strong></div>
+      <div class="row"><span>Employee ID</span><strong>{{ employee.employee_code|default:employee.emp_id }}</strong></div>
+      <div class="row"><span>Designation</span><strong>{{ employee.designation|default:"&ndash;" }}</strong></div>
+      <div class="row"><span>Department</span><strong>{{ employee.department.dept_name|default:"&ndash;" }}</strong></div>
+      <div class="row"><span>Date of Joining</span><strong>{{ employee.joining_date|date:"d-M-Y" }}</strong></div>
+      <div class="row"><span>Email</span><strong>{{ employee.email }}</strong></div>
+    </div>
+
+    {# ---- Attendance & Payment (backend-aggregated) ---- #}
+    <div class="box">
+      <h3>Attendance &amp; Payment</h3>
+      <div class="row"><span>Total Working Days</span><strong>{{ total_working_days }}</strong></div>
+      <div class="row"><span>Present Days</span><strong>{{ present_days }}</strong></div>
+      <div class="row"><span>Late Days</span><strong>{{ late_days }}</strong></div>
+      <div class="row"><span>Half-Days</span><strong>{{ half_days }}</strong></div>
+      <div class="row"><span>Absent Days</span><strong>{{ absent_days }}</strong></div>
+      <div class="row"><span>Leave Days</span><strong>{{ leave_days }}</strong></div>
+      <div class="row"><span>Paid Days</span><strong style="color:#2563eb">{{ paid_days }}</strong></div>
+      <div class="row"><span>Per Day Rate</span><strong>&#8377; {{ per_day_rate|floatformat:2 }}</strong></div>
+      <div class="row"><span>Total Working Hours</span><strong>{{ total_working_hours }}</strong></div>
+      <div class="row"><span>Payment Date</span><strong>{{ salary.updated_at|date:"d-M-Y" }}</strong></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Earnings</th>
+        <th class="num">Amount (&#8377;)</th>
+        <th>Deductions</th>
+        <th class="num">Amount (&#8377;)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Attendance Pay</td>
+        <td class="num">{{ attendance_salary|floatformat:2 }}</td>
+        <td>Deductions</td>
+        <td class="num">{{ salary.deductions|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td>Bonus</td>
+        <td class="num">{{ salary.bonus|floatformat:2 }}</td>
+        <td>&ndash;</td>
+        <td class="num">0.00</td>
+      </tr>
+      <tr class="total">
+        <td>Total Earnings</td>
+        <td class="num">
+          &#8377; {{ total_earnings|floatformat:2 }}
+        </td>
+        <td>Total Deductions</td>
+        <td class="num">&#8377; {{ salary.deductions|floatformat:2 }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="net">
+    <div>
+      <div class="muted">Net Pay</div>
+      <div class="amount">&#8377; {{ calculated_net_salary|floatformat:2 }}</div>
+      <div class="muted">Net salary for {{ salary.salary_month|date:"F Y" }}</div>
+      {% if pending_verification_count %}<div class="text-warning small mt-1">Calculated from verified days only; {{ pending_verification_count }} completed day(s) await HR review.</div>{% endif %}
+    </div>
+    <div style="text-align:right" class="muted">
+      Attendance Salary &#8377; {{ attendance_salary|floatformat:2 }}<br>
+      Bonus &#8377; {{ salary.bonus|floatformat:2 }}<br>
+      Deductions &#8377; {{ salary.deductions|floatformat:2 }}
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>This is a computer-generated payslip and does not require a signature. For queries, contact info@knovista.in.</div>
+    <div>Generated on {{ generated_on|date:"d-M-Y H:i" }}</div>
+  </div>
+</div>
+
+</body>
+</html>

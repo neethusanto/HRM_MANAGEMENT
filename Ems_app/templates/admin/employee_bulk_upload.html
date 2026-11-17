@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Upload Employees{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Bulk Upload Employees</h2>
+        <p class="text-muted mb-0">Upload an Excel (.xlsx) file to create multiple employees at once.</p>
+    </div>
+    <a href="{% url 'Ems_app:employee_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Employees
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Upload Form -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cloud-upload text-primary me-2"></i>Upload Employee Excel File</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                    <i class="bi bi-info-circle-fill fs-5 mt-1"></i>
+                    <div>
+                        <strong>Default Password:</strong> <code>Employee@2026</code> — employees must change it after first login.<br>
+                        <strong>Required columns:</strong> <code>first_name</code>, <code>last_name</code>, <code>email</code>, <code>joining_date</code>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="excel_file" class="form-label">
+                            Select Excel File <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="excel_file" id="excel_file"
+                               class="form-control" accept=".xlsx" required>
+                        <small class="text-muted">Only <strong>.xlsx</strong> files are supported.</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-1"></i> Upload & Process
+                        </button>
+                        <a href="{% url 'Ems_app:employee_list' %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text text-success me-2"></i>File Format Guide</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Your Excel file must have the following columns as headers in the first row:</p>
+
+                <table class="table table-sm table-bordered mb-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Required</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr><td><code>employee_code</code></td><td><span class="badge bg-secondary">Optional</span></td><td>EMP001</td></tr>
+                        <tr><td><code>first_name</code></td><td><span class="badge bg-danger">Required</span></td><td>John</td></tr>
+                        <tr><td><code>last_name</code></td><td><span class="badge bg-danger">Required</span></td><td>Doe</td></tr>
+                        <tr><td><code>email</code></td><td><span class="badge bg-danger">Required</span></td><td>john@company.com</td></tr>
+                        <tr><td><code>phone</code></td><td><span class="badge bg-secondary">Optional</span></td><td>9876543210</td></tr>
+                        <tr><td><code>department</code></td><td><span class="badge bg-secondary">Optional</span></td><td>Engineering</td></tr>
+                        <tr><td><code>joining_date</code></td><td><span class="badge bg-danger">Required</span></td><td>2024-01-15</td></tr>
+                        <tr><td><code>designation</code></td><td><span class="badge bg-secondary">Optional</span></td><td>Software Engineer</td></tr>
+                        <tr><td><code>location</code></td><td><span class="badge bg-secondary">Optional</span></td><td>Operational Office</td></tr>
+                        <tr><td><code>experience</code></td><td><span class="badge bg-secondary">Optional</span></td><td>3 years</td></tr>
+                        <tr><td><code>current_salary</code></td><td><span class="badge bg-secondary">Optional</span></td><td>50000</td></tr>
+                        <tr><td><code>date_of_birth</code></td><td><span class="badge bg-secondary">Optional</span></td><td>1995-06-20</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-warning small mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>Notes:</strong>
+                    <ul class="mb-0 mt-1">
+                        <li>Duplicate emails or employee codes will be skipped.</li>
+                        <li>Department names must match exactly as in the system.</li>
+                        <li>Date format: <code>YYYY-MM-DD</code> or <code>DD-MM-YYYY</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,566 @@
+/* ============================================================
+   EMS — Dashboard & Auth Specific Styles
+   Corporate Navy + Cyan Premium Theme
+   ============================================================ */
+
+/* ---------- Login Hero Page ---------- */
+.login-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--navbar-height) - 100px);
+    padding: 40px 16px;
+}
+
+.login-hero-card {
+    width: 100%;
+    max-width: 1020px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+
+.login-hero-head {
+    position: relative;
+    padding: 52px 32px;
+    text-align: center;
+    color: var(--text-inverse);
+    background: linear-gradient(135deg, #0B1F3A 0%, #123E66 50%, #16B8D4 100%);
+    overflow: hidden;
+}
+
+.login-hero-head::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(22, 184, 212, 0.2), transparent 70%);
+    pointer-events: none;
+}
+
+.login-hero-head::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -60px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+    pointer-events: none;
+}
+
+.login-hero-head h3 {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 8px;
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-inverse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.login-hero-head h3 i { font-size: 1.6rem; opacity: 0.9; }
+
+.login-hero-head p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+.login-role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 36px 32px;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 22px;
+    text-align: center;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    transition: transform var(--t-base), box-shadow var(--t-base), border-color var(--t-base);
+    cursor: pointer;
+}
+
+.role-card:hover {
+    transform: translateY(-6px);
+    border-color: transparent;
+    box-shadow: var(--shadow-xl);
+}
+
+.role-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 74px;
+    height: 74px;
+    border-radius: var(--radius-lg);
+    color: var(--text-inverse);
+    font-size: 32px;
+    transition: transform var(--t-base);
+}
+
+.role-card:hover .role-card-icon {
+    transform: scale(1.08) rotate(-4deg);
+}
+
+.role-card-admin .role-card-icon {
+    background: linear-gradient(135deg, #0B1F3A, #123E66);
+    box-shadow: 0 8px 20px rgba(11, 31, 58, 0.3);
+}
+.role-card-hr .role-card-icon {
+    background: linear-gradient(135deg, #059669, #10b981);
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.28);
+}
+.role-card-employee .role-card-icon {
+    background: linear-gradient(135deg, #16B8D4, #0ea5c4);
+    box-shadow: 0 8px 20px rgba(22, 184, 212, 0.3);
+}
+
+.role-card h5 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.role-card p {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.role-card .btn { width: 100%; }
+
+/* ---------- Auth Pages (Admin / HR / Employee Login) ---------- */
+.auth-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--navbar-height) - 100px);
+    padding: 40px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+
+.auth-card-head {
+    position: relative;
+    padding: 36px 28px 28px;
+    text-align: center;
+    color: var(--text-inverse);
+    overflow: hidden;
+}
+
+.auth-card-head::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.16), transparent 70%);
+    pointer-events: none;
+}
+
+.auth-card-head h4 {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1.28rem;
+    font-weight: 700;
+    color: var(--text-inverse);
+}
+
+.auth-card-head h4 i { font-size: 22px; }
+
+.auth-admin .auth-card-head    { background: linear-gradient(135deg, #0B1F3A, #123E66); }
+.auth-hr .auth-card-head       { background: linear-gradient(135deg, #059669, #10b981); }
+.auth-employee .auth-card-head { background: linear-gradient(135deg, #16B8D4, #0ea5c4); }
+
+.auth-card-body { padding: 28px; }
+
+.auth-card-body .alert-info {
+    margin-bottom: 22px;
+    padding: 12px 15px;
+    font-size: 0.82rem;
+}
+
+.auth-card-body .alert-info > div { line-height: 1.55; }
+
+.auth-card-body .form-control { padding: 11px 14px; }
+
+.auth-card-body .btn-lg { margin-top: 6px; }
+
+.auth-footer {
+    margin-top: 22px;
+    padding-top: 18px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+}
+
+.auth-footer a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color var(--t-fast);
+}
+
+.auth-footer a:hover { color: var(--accent); }
+
+/* ---------- Dashboard Stat Card (custom) ---------- */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--t-base), box-shadow var(--t-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 22px;
+}
+
+.stat-number {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+}
+
+.stat-label {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+/* ---------- Attendance Today Card ---------- */
+.today-status {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.today-status .badge.fs-4 {
+    display: inline-flex;
+    padding: 12px 26px !important;
+    font-size: 1rem !important;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.today-check-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 22px 0;
+    text-align: left;
+}
+
+.today-check-row > div {
+    padding: 14px 16px;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.today-check-row strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+}
+
+.today-check-row p {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* ---------- Summary Tiles (Reports / Dashboard) ---------- */
+.summary-tile {
+    padding: 18px 16px;
+    text-align: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    transition: transform var(--t-base), box-shadow var(--t-base);
+}
+
+.summary-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.summary-tile h4 {
+    margin: 0 0 4px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.summary-tile small {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.tile-present  { background: var(--success-soft); border-color: var(--success-border); color: var(--success-hover); }
+.tile-absent   { background: var(--danger-soft);  border-color: var(--danger-border);  color: var(--danger-hover); }
+.tile-late     { background: var(--warning-soft); border-color: var(--warning-border); color: var(--warning-hover); }
+.tile-half-day { background: var(--accent-soft);  border-color: var(--accent-border);  color: var(--accent-hover); }
+.tile-pending  { background: var(--warning-soft); border-color: var(--warning-border); color: var(--warning-hover); }
+.tile-approved { background: var(--success-soft); border-color: var(--success-border); color: var(--success-hover); }
+.tile-rejected { background: var(--danger-soft);  border-color: var(--danger-border);  color: var(--danger-hover); }
+
+/* ---------- Profile ---------- */
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-surface);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-card {
+    padding: 28px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Status Utility Colors ---------- */
+.status-present  { color: var(--success-hover); background: var(--success-soft); }
+.status-absent   { color: var(--danger-hover);  background: var(--danger-soft); }
+.status-late     { color: var(--warning-hover); background: var(--warning-soft); }
+.status-half_day { color: var(--accent-hover);  background: var(--accent-soft); }
+.status-pending  { color: var(--warning-hover); background: var(--warning-soft); }
+.status-approved { color: var(--success-hover); background: var(--success-soft); }
+.status-rejected { color: var(--danger-hover);  background: var(--danger-soft); }
+
+/* ---------- Action Buttons in Tables ---------- */
+.action-buttons { white-space: nowrap; }
+.action-buttons .btn { margin: 1px 2px; }
+
+/* ============================================================
+   RESPONSIVE — Dashboard & Auth
+   ============================================================ */
+
+/* ---------- Tablet / small desktop (≤ 992px) ---------- */
+@media (max-width: 992px) {
+    .login-hero-head { padding: 44px 24px; }
+    .login-hero-head h3 { font-size: 1.55rem; }
+    .login-role-grid { padding: 28px 24px; gap: 16px; }
+}
+
+/* ---------- Tablet portrait (≤ 768px) ---------- */
+@media (max-width: 768px) {
+    .login-hero-head { padding: 34px 20px; }
+    .login-hero-head h3 {
+        font-size: 1.3rem;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .login-hero-head p { font-size: 0.88rem; }
+    .login-role-grid { padding: 22px 18px; gap: 14px; }
+    .role-card { padding: 26px 18px; }
+    .role-card-icon { width: 62px; height: 62px; font-size: 26px; }
+
+    .auth-card-head { padding: 28px 22px 22px; }
+    .auth-card-body { padding: 22px; }
+
+    .today-check-row { grid-template-columns: 1fr; }
+    .summary-tile h4 { font-size: 1.4rem; }
+}
+
+/* ---------- Large phones (≤ 576px) ---------- */
+@media (max-width: 576px) {
+    .login-hero { padding: 20px 12px; }
+    .login-hero-card { border-radius: var(--radius-lg); }
+    .login-role-grid { grid-template-columns: 1fr; }
+    .role-card .btn { width: 100%; }
+
+    .auth-wrapper { padding: 20px 12px; }
+    .auth-card { border-radius: var(--radius); }
+
+    /* Stack stat-card vertically on small screens */
+    .stat-card { flex-direction: column; text-align: center; }
+    .stat-number { font-size: 1.4rem; }
+}
+
+/* ---------- Very small phones (≤ 480px) ---------- */
+@media (max-width: 480px) {
+    .login-hero-head h3 { font-size: 1.15rem; }
+    .login-hero-head p  { font-size: 0.82rem; }
+    .login-role-grid    { padding: 16px 12px; gap: 12px; }
+    .role-card          { padding: 20px 14px; }
+    .role-card-icon     { width: 54px; height: 54px; font-size: 22px; }
+    .role-card h5       { font-size: 1rem; }
+    .role-card p        { font-size: 0.8rem; }
+
+    .auth-card-head     { padding: 24px 18px 18px; }
+    .auth-card-head h4  { font-size: 1.1rem; }
+    .auth-card-body     { padding: 18px; }
+
+    .stat-card          { padding: 16px; gap: 12px; }
+    .stat-icon          { width: 44px; height: 44px; font-size: 18px; }
+    .stat-number        { font-size: 1.25rem; }
+
+    .summary-tile       { padding: 14px 12px; }
+    .summary-tile h4    { font-size: 1.2rem; }
+
+    .profile-avatar     { width: 90px; height: 90px; }
+    .profile-card       { padding: 18px; }
+
+    .today-check-row > div { padding: 10px 12px; }
+    .today-status .badge.fs-4 {
+        padding: 8px 18px !important;
+        font-size: 0.88rem !important;
+    }
+}
+
+/* ---------- Foldables / ultra-narrow (≤ 360px) ---------- */
+@media (max-width: 360px) {
+    .login-hero-head h3 {
+        font-size: 1rem;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .role-card-icon { width: 48px; height: 48px; font-size: 20px; }
+    .auth-card-body { padding: 14px; }
+    .btn-lg { padding: 9px 16px; font-size: 0.85rem; }
+}
+
+/* ---------- Large desktop (≥ 1400px) ---------- */
+@media (min-width: 1400px) {
+    .login-hero-card { max-width: 1100px; }
+    .login-role-grid { gap: 24px; padding: 40px 36px; }
+}
+
+/* ---------- Landscape phones (short height) ---------- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .login-hero,
+    .auth-wrapper {
+        min-height: auto;
+        padding: 20px 12px;
+    }
+    .login-hero-head { padding: 24px 20px; }
+    .auth-card-head  { padding: 20px; }
+}
+
+/* ============================================================
+   DASHBOARD PRODUCTION POLISH
+   ============================================================ */
+
+/* ---------- Role Card — subtle active state ---------- */
+.role-card:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* ---------- Summary tile — active state for reports ---------- */
+.summary-tile.report-tile.active {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ---------- Today status badge polish ---------- */
+.today-status .badge.fs-4 {
+    box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
+}
+
+/* ---------- Profile — avatar section ---------- */
+.profile-avatar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.profile-avatar-wrap .user-avatar {
+    width: 96px;
+    height: 96px;
+    font-size: 36px;
+    border: 4px solid var(--bg-surface);
+    box-shadow: 0 6px 18px rgba(11, 31, 58, 0.15);
+}
+.profile-avatar-wrap .profile-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+.profile-avatar-wrap .profile-role {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+/* ---------- Payslip print ---------- */
+@media print {
+    .payslip { box-shadow: none !important; }
+}

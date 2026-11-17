@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Attendance{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Add Attendance</h2>
+    <p class="text-muted mb-0">Enter the employee’s recorded attendance. The entry remains pending until HR verifies it.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'Ems_app:attendance_list' %}"><i class="bi bi-arrow-left me-1"></i>Back to attendance</a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            {% for field in form %}
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>{% endif %}
+              {% if field.name == 'check_in' or field.name == 'check_out' %}<div class="form-text">Use 24-hour time.</div>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex flex-wrap justify-content-end gap-2 mt-4 pt-3 border-top">
+            <a href="{% url 'Ems_app:attendance_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Save Attendance</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

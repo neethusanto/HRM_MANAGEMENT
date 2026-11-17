@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Calendar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+  .calendar-heading,.calendar-day { border-right:1px solid #e5eaf1; border-bottom:1px solid #e5eaf1; }
+  .calendar-heading { padding:.7rem .45rem; text-align:center; font-size:.78rem; font-weight:700; color:#64748b; background:#f8fafc; }
+  .calendar-day { min-height:112px; padding:.55rem; background:#fff; }
+  .calendar-day.outside { background:#f8fafc; color:#94a3b8; }
+  .calendar-day.today { box-shadow:inset 0 0 0 2px #2563eb; }
+  @media(max-width:700px) { .calendar-day { min-height:82px; padding:.3rem; } .calendar-detail { display:none; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <h2>Attendance Calendar</h2>
+    <p class="text-muted mb-0">{{ employee.emp_name }} · {{ month_label }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="?month={{ previous_month.month }}&year={{ previous_month.year }}" aria-label="Previous month"><i class="bi bi-chevron-left"></i></a>
+    <span class="btn btn-light border">{{ month_label }}</span>
+    <a class="btn btn-outline-secondary" href="?month={{ next_month.month }}&year={{ next_month.year }}" aria-label="Next month"><i class="bi bi-chevron-right"></i></a>
+    {% if calendar_for_other %}
+      <a class="btn btn-primary" href="{% url 'Ems_app:employee_monthly_attendance' employee.pk %}?month={{ selected_month }}&year={{ selected_year }}">Attendance Log</a>
+    {% else %}<a class="btn btn-primary" href="{% url 'Ems_app:employee_attendance' %}">Attendance Log</a>{% endif %}
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+  <div class="calendar-grid">
+    <div class="calendar-heading">Mon</div><div class="calendar-heading">Tue</div><div class="calendar-heading">Wed</div><div class="calendar-heading">Thu</div><div class="calendar-heading">Fri</div><div class="calendar-heading">Sat</div><div class="calendar-heading">Sun</div>
+    {% for week in weeks %}
+      {% for cell in week %}
+      <div class="calendar-day {% if not cell.in_month %}outside{% endif %} {% if cell.date == today %}today{% endif %}">
+        <div class="d-flex justify-content-between align-items-center">
+          <strong>{{ cell.date|date:"j" }}</strong>
+          {% if cell.attendance %}<span class="badge {% if cell.attendance.is_verified %}bg-success{% else %}bg-warning text-dark{% endif %}" title="{% if cell.attendance.is_verified %}Verified{% else %}Awaiting HR verification{% endif %}">{% if cell.attendance.is_verified %}OK{% else %}Pending{% endif %}</span>{% endif %}
+        </div>
+        {% if cell.attendance %}
+          <div class="calendar-detail small mt-2">
+            <span class="badge {% if cell.attendance.status == 'present' %}bg-success{% elif cell.attendance.status == 'late' %}bg-warning text-dark{% elif cell.attendance.status == 'half_day' %}bg-info text-dark{% elif cell.attendance.status == 'leave' %}bg-secondary{% else %}bg-danger{% endif %}">{{ cell.attendance.get_status_display }}</span>
+            <div class="mt-1">{{ cell.attendance.check_in|date:"H:i"|default:"—" }}–{{ cell.attendance.check_out|date:"H:i"|default:"—" }}</div>
+            <div>{{ cell.attendance.get_work_mode_display }}</div>
+            {% if cell.attendance.check_out %}<div class="text-muted">{{ cell.attendance.working_hours }}</div>{% endif %}
+          </div>
+        {% elif cell.in_month and cell.holiday_name %}
+          <div class="small mt-2"><span class="badge bg-secondary">Holiday</span><div class="calendar-detail text-muted mt-1">{{ cell.holiday_name }}</div></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

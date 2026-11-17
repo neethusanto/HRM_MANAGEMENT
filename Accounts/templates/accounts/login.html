@@ -1,0 +1,799 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Secure Access - EMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================================
+       SPLIT-SCREEN LOGIN LAYOUT
+       ============================================================ */
+    body.role-guest .app-main > .container-fluid {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+    body.role-guest .app-main {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .split-login {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        width: 100%;
+        overflow: hidden;
+        background: #f4f6fb;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* ============================================================
+       LEFT PANEL — image + particle balls
+       ============================================================ */
+    .split-login__left {
+        position: relative;
+        flex: 1 1 55%;
+        overflow: hidden;
+        background: #0b1e3a;
+    }
+
+    .split-login__left img.split-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.55;
+        filter: brightness(0.55) saturate(1.1);
+    }
+
+    .split-login__left::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            135deg,
+            rgba(13, 71, 161, 0.85) 0%,
+            rgba(25, 118, 210, 0.65) 45%,
+            rgba(0, 0, 0, 0.78) 100%
+        );
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    #particle-canvas {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+    }
+
+    .split-login__left-content {
+        position: relative;
+        z-index: 3;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 48px 56px;
+        color: #fff;
+    }
+
+    .brand-tagline {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+    }
+    .brand-tagline .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        font-size: 1.35rem;
+    }
+
+    .hero-copy h1 {
+        font-size: clamp(1.9rem, 3.5vw, 2.75rem);
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+        letter-spacing: -0.02em;
+    }
+    .hero-copy p {
+        font-size: 1.05rem;
+        max-width: 480px;
+        opacity: 0.9;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+
+    .hero-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 20px;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .hero-features span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .hero-features i { color: #4fc3f7; }
+
+    .scroll-indicator {
+        align-self: flex-start;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.65;
+        animation: bounceDown 2s infinite;
+    }
+    @keyframes bounceDown {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(6px); }
+    }
+
+    /* ============================================================
+       RIGHT PANEL — secure admin login form
+       ============================================================ */
+    .split-login__right {
+        flex: 1 1 45%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 40px;
+        background: #ffffff;
+        position: relative;
+        overflow-y: auto;
+    }
+    .split-login__right::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(circle, rgba(13, 71, 161, 0.05) 1px, transparent 1px);
+        background-size: 22px 22px;
+        pointer-events: none;
+    }
+
+    .login-form-wrap {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 460px;
+    }
+
+    /* ------------ HEADER ------------ */
+    .form-head {
+        margin-bottom: 32px;
+    }
+
+    .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #e3f2fd, #e1f5fe);
+        color: #0d47a1;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+        border: 1px solid #c9e4ff;
+    }
+    .welcome-badge i { font-size: 0.85rem; color: #1976d2; }
+
+    .form-head h2 {
+        font-weight: 800;
+        font-size: 2.15rem;
+        line-height: 1.15;
+        color: #0b1e3a;
+        margin-bottom: 10px;
+        letter-spacing: -0.025em;
+    }
+    .form-head h2 .gradient-text {
+        background: linear-gradient(135deg, #1976d2, #0d47a1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .form-head p {
+        color: #64748b;
+        margin-bottom: 0;
+        font-size: 0.94rem;
+        line-height: 1.6;
+    }
+
+    /* ------------ LABELS ------------ */
+    .login-form-wrap .form-label {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.83rem;
+        margin-bottom: 8px;
+        letter-spacing: 0.01em;
+    }
+
+    /* ------------ INPUT WITH ICON ------------ */
+    .input-group-icon {
+        position: relative;
+    }
+    .input-group-icon .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1.05rem;
+        pointer-events: none;
+        transition: color 0.2s;
+        z-index: 2;
+    }
+
+    .input-group-icon .form-control {
+        height: 54px;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        padding: 0 46px 0 46px;
+        font-size: 0.95rem;
+        color: #0f172a;
+        background: #fbfcfe;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        font-weight: 500;
+    }
+    .input-group-icon .form-control::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+    .input-group-icon .form-control:focus {
+        border-color: #1976d2;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.12);
+        color: #0f172a;
+        outline: none;
+    }
+    .input-group-icon .form-control:focus ~ .input-icon {
+        color: #1976d2;
+    }
+
+    /* password eye toggle */
+    .input-group-icon .toggle-password {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.05rem;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        z-index: 2;
+        transition: color 0.2s, background 0.2s;
+    }
+    .input-group-icon .toggle-password:hover {
+        color: #1976d2;
+        background: rgba(25, 118, 210, 0.08);
+    }
+
+    /* ------------ KEEP SIGNED IN / RESET ------------ */
+    .login-extra {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 22px;
+    }
+    .login-extra .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .login-extra .form-check-input:checked {
+        background-color: #1976d2;
+        border-color: #1976d2;
+    }
+    .login-extra .form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.18);
+        border-color: #1976d2;
+    }
+    .login-extra .form-check-label {
+        cursor: pointer;
+        color: #475569;
+        font-weight: 500;
+        padding-left: 4px;
+        user-select: none;
+    }
+    .login-extra a {
+        color: #1976d2;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.15s;
+    }
+    .login-extra a:hover {
+        color: #0d47a1;
+        text-decoration: underline;
+    }
+
+    /* ------------ SECURITY NOTICE ------------ */
+    .security-notice {
+        margin: 4px 0 24px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #78350f;
+        font-size: 0.79rem;
+        line-height: 1.55;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .security-notice i {
+        color: #d97706;
+        font-size: 1rem;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+    .security-notice strong { color: #78350f; font-weight: 700; }
+
+    /* ------------ SUBMIT BUTTON ------------ */
+    .login-btn {
+        position: relative;
+        height: 56px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.3px;
+        background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+        border: none;
+        color: #ffffff;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(13, 71, 161, 0.22);
+        transition: transform 0.15s, box-shadow 0.25s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .login-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+    .login-btn > * { position: relative; z-index: 1; }
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(13, 71, 161, 0.32);
+        color: #ffffff;
+    }
+    .login-btn:hover::before { opacity: 1; }
+    .login-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 6px 14px rgba(13, 71, 161, 0.25);
+    }
+    .login-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.28),
+                    0 8px 20px rgba(13, 71, 161, 0.22);
+    }
+    .login-btn i {
+        font-size: 1.15rem;
+        transition: transform 0.25s;
+    }
+    .login-btn:hover i {
+        transform: translateX(3px);
+    }
+
+    /* ------------ FOOTER LINKS ------------ */
+    .login-foot-links {
+        margin-top: 30px;
+        padding-top: 22px;
+        border-top: 1px solid #eef2f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 4px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    .login-foot-links a {
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 8px;
+        transition: color 0.15s, background 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .login-foot-links a:hover {
+        color: #1976d2;
+        background: rgba(25, 118, 210, 0.08);
+    }
+    .login-foot-links a i { font-size: 0.9rem; }
+    .login-foot-links .dot {
+        color: #cbd5e1;
+        font-size: 0.9rem;
+    }
+
+    .login-copyright {
+        margin-top: 14px;
+        text-align: center;
+        font-size: 0.72rem;
+        color: #b1bccb;
+        letter-spacing: 0.3px;
+    }
+
+    /* ------------ ALERTS ------------ */
+    .login-form-wrap .alert {
+        border-radius: 10px;
+        font-size: 0.875rem;
+        padding: 12px 16px;
+        border: none;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    .login-form-wrap .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left: 4px solid #dc2626;
+    }
+    .login-form-wrap .alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border-left: 4px solid #16a34a;
+    }
+    .login-form-wrap .alert-info {
+        background: #eff6ff;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 991.98px) {
+        .split-login { flex-direction: column; min-height: auto; }
+        .split-login__left {
+            flex: none;
+            height: 240px;
+        }
+        .split-login__left-content {
+            padding: 24px 28px;
+        }
+        .hero-copy h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .hero-copy p { font-size: 0.88rem; }
+        .hero-features, .scroll-indicator { display: none; }
+        .split-login__right { padding: 40px 24px 48px; }
+        .form-head h2 { font-size: 1.8rem; }
+        .form-head { margin-bottom: 26px; }
+    }
+
+    @media (max-width: 480px) {
+        .form-head h2 { font-size: 1.6rem; }
+        .login-btn { height: 52px; font-size: 0.95rem; }
+        .input-group-icon .form-control { height: 50px; }
+        .login-extra { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="split-login">
+
+    <!-- ===================== LEFT: image + particles ===================== -->
+    <div class="split-login__left">
+        <img class="split-bg"
+             src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80"
+             alt="Office background">
+
+        <canvas id="particle-canvas"></canvas>
+
+        <div class="split-login__left-content">
+            <div class="brand-tagline">
+                <span class="brand-mark"><i class="bi bi-buildings-fill"></i></span>
+                <span>EMS&nbsp;Console</span>
+            </div>
+
+            <div class="hero-copy">
+                <h1>Manage your workforce,<br>effortlessly.</h1>
+                <p>
+                    Attendance, leave, payroll and employee records — all in one place.
+                    Attendance is captured automatically from your biometric device.
+                </p>
+                <div class="hero-features mt-4">
+                    <span><i class="bi bi-check-circle-fill"></i> Biometric sync</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Role-based access</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Real-time reports</span>
+                </div>
+            </div>
+
+            <div class="scroll-indicator">
+                <i class="bi bi-arrow-down"></i> Secure sign-in
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== RIGHT: secure admin login form ===================== -->
+    <div class="split-login__right">
+        <div class="login-form-wrap">
+
+            <!-- HEADER -->
+            <div class="form-head">
+                <div class="welcome-badge">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    Secure Access
+                </div>
+                <h2>Access <span class="gradient-text">Admin Panel</span></h2>
+                <p>Enter your administrative credentials to access the management dashboard.</p>
+            </div>
+
+            <!-- MESSAGES -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- FORM -->
+            <form method="post" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <!-- Admin Email or Username -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Admin Email or Username</label>
+                    <div class="input-group-icon">
+                        <i class="bi bi-person-badge-fill input-icon"></i>
+                        <input type="text" name="username" id="username"
+                               class="form-control"
+                               placeholder="neethu.ks@knovistatechnologies.com"
+                               required autofocus>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group-icon">
+                        <i class="bi bi-lock-fill input-icon"></i>
+                        <input type="password" name="password" id="password"
+                               class="form-control"
+                               placeholder="Enter your password"
+                               required>
+                        <button type="button" class="toggle-password"
+                                onclick="togglePassword()"
+                                aria-label="Show password">
+                            <i class="bi bi-eye-fill" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Keep signed in / Reset Password -->
+                <div class="login-extra">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Keep me signed in</label>
+                    </div>
+                    <a href="#">Reset Password</a>
+                </div>
+
+                <!-- Security notice -->
+                <div class="security-notice">
+                    <i class="bi bi-shield-exclamation"></i>
+                    <div>
+                        This is a <strong>secure administrative area</strong>. All access
+                        attempts are logged and monitored.
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn login-btn w-100">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Access Admin Panel</span>
+                </button>
+            </form>
+
+            <!-- Footer links -->
+            <div class="login-foot-links">
+                <a href="#">
+                    <i class="bi bi-activity"></i> System Status
+                </a>
+                <span class="dot">•</span>
+                <a href="#">
+                    <i class="bi bi-headset"></i> Technical Support
+                </a>
+                <span class="dot">•</span>
+                <a href="#">
+                    <i class="bi bi-shield-check"></i> Security Center
+                </a>
+            </div>
+
+            <div class="login-copyright">
+                &copy; {% now "Y" %} EMS Console &middot; All rights reserved
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ============================================================
+   PASSWORD VISIBILITY TOGGLE
+   ============================================================ */
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon  = document.getElementById('eyeIcon');
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye-fill');
+        icon.classList.add('bi-eye-slash-fill');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash-fill');
+        icon.classList.add('bi-eye-fill');
+    }
+}
+
+/* ============================================================
+   ANIMATED PARTICLE BALLS  (canvas, pure JS)
+   ============================================================ */
+(function () {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [], animationId;
+    const MOUSE = { x: null, y: null, radius: 140 };
+
+    function particleCount() {
+        if (window.innerWidth < 600) return 30;
+        if (window.innerWidth < 1200) return 55;
+        return 80;
+    }
+
+    const COLORS = [
+        'rgba(255, 255, 255, 0.9)',
+        'rgba(79, 195, 247, 0.9)',
+        'rgba(25, 118, 210, 0.9)',
+        'rgba(179, 229, 252, 0.85)'
+    ];
+
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        W = canvas.width  = rect.width;
+        H = canvas.height = rect.height;
+        buildParticles();
+    }
+
+    function buildParticles() {
+        particles = [];
+        const count = particleCount();
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                r: Math.random() * 2.4 + 1.2,
+                vx: (Math.random() - 0.5) * 0.6,
+                vy: (Math.random() - 0.5) * 0.6,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                pulse: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (let i = 0; i < particles.length; i++) {
+            const p1 = particles[i];
+            for (let j = i + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p1.x - p2.x;
+                const dy = p1.y - p2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 130) {
+                    const alpha = (1 - dist / 130) * 0.28;
+                    ctx.strokeStyle = `rgba(179, 229, 252, ${alpha})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        particles.forEach(p => {
+            p.pulse += 0.03;
+            const pulsing = p.r + Math.sin(p.pulse) * 0.6;
+
+            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, pulsing * 4);
+            gradient.addColorStop(0, p.color);
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, pulsing * 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, pulsing, 0, Math.PI * 2);
+            ctx.fill();
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0 || p.x > W) p.vx *= -1;
+            if (p.y < 0 || p.y > H) p.vy *= -1;
+
+            if (MOUSE.x !== null) {
+                const dx = p.x - MOUSE.x;
+                const dy = p.y - MOUSE.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < MOUSE.radius && dist > 0) {
+                    const force = (MOUSE.radius - dist) / MOUSE.radius;
+                    p.x += (dx / dist) * force * 1.4;
+                    p.y += (dy / dist) * force * 1.4;
+                }
+            }
+        });
+
+        animationId = requestAnimationFrame(draw);
+    }
+
+    canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        MOUSE.x = e.clientX - rect.left;
+        MOUSE.y = e.clientY - rect.top;
+    });
+    canvas.addEventListener('mouseleave', () => {
+        MOUSE.x = null;
+        MOUSE.y = null;
+    });
+
+    window.addEventListener('resize', () => {
+        cancelAnimationFrame(animationId);
+        resize();
+        draw();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(animationId);
+        else draw();
+    });
+
+    resize();
+    draw();
+})();
+</script>
+{% endblock %}

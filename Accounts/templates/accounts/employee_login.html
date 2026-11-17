@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Employee Login - EMS{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card auth-employee fade-in">
+        <div class="auth-card-head">
+            <h4><i class="bi bi-person-fill"></i> Employee Login</h4>
+        </div>
+        <div class="auth-card-body">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>Use the email address registered by your HR/Admin and the password you were given.</div>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username (Email)</label>
+                    <input type="text" name="username" id="username" class="form-control"
+                           placeholder="you@example.com" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control"
+                           placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-info btn-lg w-100 text-white">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign in as Employee
+                </button>
+            </form>
+            <div class="auth-footer">
+                <a href="{% url 'Accounts:login_choice' %}">
+                    <i class="bi bi-arrow-left"></i> Back to role selection
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

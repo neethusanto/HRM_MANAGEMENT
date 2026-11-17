@@ -1,0 +1,607 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-tile {
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .report-tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    .report-tile.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(22, 184, 212, 0.15);
+    }
+    .report-tile .tile-hint {
+        font-size: 0.7rem;
+        opacity: 0.65;
+        display: block;
+        margin-top: 4px;
+    }
+    .report-tile.active .tile-hint {
+        opacity: 1;
+    }
+
+    .detail-panel {
+        display: none;
+        animation: fadeSlideIn 0.25s ease-out;
+    }
+    .detail-panel.show {
+        display: block;
+    }
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .detail-panel .card-header {
+        background: var(--bg-surface-alt);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Reports Dashboard</h2>
+        <p class="text-muted mb-0">
+            Showing data for:
+            <span class="badge bg-primary">{{ month_label }}</span>
+        </p>
+    </div>
+
+    <div class="d-flex gap-2 align-items-end flex-wrap">
+
+        <!--  Month / Year picker — reloads SAME page -->
+        <form method="get"
+              action="{% url 'Ems_app:reports' %}"
+              class="d-flex gap-2 align-items-end flex-wrap">
+            <div>
+                <label class="form-label small mb-0">Month</label>
+                <select name="month" class="form-select form-select-sm"
+                        onchange="this.form.submit()">
+                    {% for num, name in all_months %}
+                        <option value="{{ num }}"
+                            {% if num == selected_month %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label small mb-0">Year</label>
+                <select name="year" class="form-select form-select-sm"
+                        onchange="this.form.submit()">
+                    {% for y in all_years %}
+                        <option value="{{ y }}"
+                            {% if y == selected_year %}selected{% endif %}>
+                            {{ y }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="height: 45px;">
+                 View
+            </button>
+        </form>
+
+        <!-- Download form — uses the SAME selected month/year -->
+        <form method="get"
+              action="{% url 'Ems_app:reports_download_monthly' %}"
+              class="d-flex gap-2 align-items-end"
+              target="_blank">
+            <input type="hidden" name="month" value="{{ selected_month }}">
+            <input type="hidden" name="year"  value="{{ selected_year }}">
+
+            <button type="submit" name="format" value="excel"
+                    class="btn btn-success btn-sm" style="height: 45px;">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button type="submit" name="format" value="pdf"
+                    class="btn btn-danger btn-sm" style="height: 45px;">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================
+     ROW 1: Department-wise + Attendance Summary
+     ============================================================ -->
+<div class="row g-4 mb-4">
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-diagram-3 text-primary"></i> Department-wise Employees</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for dept in dept_wise %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ dept.dept_name }}</span>
+                            <span class="badge bg-primary">{{ dept.emp_count }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No departments found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar2-check text-primary"></i> Attendance Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="summary-tile tile-present report-tile"
+                             data-target="att-present">
+                            <h4>{{ attendance_summary.present }}</h4>
+                            <small>Present</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click </span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="summary-tile tile-absent report-tile"
+                             data-target="att-absent">
+                            <h4>{{ attendance_summary.absent }}</h4>
+                            <small>Absent</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click </span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="summary-tile tile-late report-tile"
+                             data-target="att-late">
+                            <h4>{{ attendance_summary.late }}</h4>
+                            <small>Late</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click </span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="summary-tile tile-half-day report-tile"
+                             data-target="att-half">
+                            <h4>{{ attendance_summary.half_day }}</h4>
+                            <small>Half-Day</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     ATTENDANCE DETAIL PANELS
+     ============================================================ -->
+
+<div id="att-present" class="detail-panel mb-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-check-circle text-success"></i> Present </h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('att-present')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Working Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attendance_details.present %}
+                            <tr>
+                                <td><strong>{{ att.employee.emp_name }}</strong></td>
+                                <td>{{ att.employee.department.dept_name|default:"–" }}</td>
+                                <td>{{ att.date|date:"M d, Y" }}</td>
+                                <td>{{ att.check_in|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.check_out|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.working_hours }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No present records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="att-absent" class="detail-panel mb-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-x-circle text-danger"></i> Absent </h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('att-absent')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attendance_details.absent %}
+                            <tr>
+                                <td><strong>{{ att.employee.emp_name }}</strong></td>
+                                <td>{{ att.employee.department.dept_name|default:"–" }}</td>
+                                <td>{{ att.date|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-danger">Absent</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No absent records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="att-late" class="detail-panel mb-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-clock-history text-warning"></i> Late</h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('att-late')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Working Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attendance_details.late %}
+                            <tr>
+                                <td><strong>{{ att.employee.emp_name }}</strong></td>
+                                <td>{{ att.employee.department.dept_name|default:"–" }}</td>
+                                <td>{{ att.date|date:"M d, Y" }}</td>
+                                <td>{{ att.check_in|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.check_out|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.working_hours }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No late records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="att-half" class="detail-panel mb-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-circle-half text-info"></i> Half-Day </h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('att-half')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Working Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attendance_details.half_day %}
+                            <tr>
+                                <td><strong>{{ att.employee.emp_name }}</strong></td>
+                                <td>{{ att.employee.department.dept_name|default:"–" }}</td>
+                                <td>{{ att.date|date:"M d, Y" }}</td>
+                                <td>{{ att.check_in|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.check_out|date:"H:i"|default:"–" }}</td>
+                                <td>{{ att.working_hours }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No half-day records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     ROW 2: Leave Summary + Salary Summary
+     ============================================================ -->
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-heart text-primary"></i> Leave Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-4">
+                        <div class="summary-tile tile-pending report-tile"
+                             data-target="leave-pending">
+                            <h4>{{ leave_summary.pending }}</h4>
+                            <small>Pending</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="summary-tile tile-approved report-tile"
+                             data-target="leave-approved">
+                            <h4>{{ leave_summary.approved }}</h4>
+                            <small>Approved</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="summary-tile tile-rejected report-tile"
+                             data-target="leave-rejected">
+                            <h4>{{ leave_summary.rejected }}</h4>
+                            <small>Rejected</small>
+                            <span class="tile-hint"><i class="bi bi-hand-index"></i> Click</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-cash-stack text-primary"></i> Salary Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Total Basic Salary</span>
+                        <strong>₹ {{ salary_summary.total_salary|default:"0"|floatformat:2 }}</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Total Bonus</span>
+                        <strong>₹ {{ salary_summary.total_bonus|default:"0"|floatformat:2 }}</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span>Total Deductions</span>
+                        <strong>₹ {{ salary_summary.total_deductions|default:"0"|floatformat:2 }}</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between bg-primary text-white">
+                        <span>Total Net Salary</span>
+                        <strong style="color: antiquewhite;">₹ {{ salary_summary.total_net|default:"0"|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     LEAVE DETAIL PANELS
+     ============================================================ -->
+
+<div id="leave-pending" class="detail-panel mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-hourglass-split text-warning"></i> Pending Leaves </h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('leave-pending')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Applied On</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leave_details.pending %}
+                            <tr>
+                                <td><strong>{{ leave.employee.emp_name }}</strong></td>
+                                <td>{{ leave.get_leave_type_display }}</td>
+                                <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.reason|truncatechars:40|default:"–" }}</td>
+                                <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'Ems_app:leave_detail' leave.pk %}"
+                                       class="btn btn-sm btn-info text-white">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">No pending leaves.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="leave-approved" class="detail-panel mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-check-circle text-success"></i> Approved Leaves</h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('leave-approved')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Applied On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leave_details.approved %}
+                            <tr>
+                                <td><strong>{{ leave.employee.emp_name }}</strong></td>
+                                <td>{{ leave.get_leave_type_display }}</td>
+                                <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.reason|truncatechars:40|default:"–" }}</td>
+                                <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No approved leaves.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="leave-rejected" class="detail-panel mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-x-circle text-danger"></i> Rejected Leaves </h5>
+            <button class="btn btn-sm btn-secondary" onclick="closePanel('leave-rejected')">
+                <i class="bi bi-x"></i> Close
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Applied On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leave_details.rejected %}
+                            <tr>
+                                <td><strong>{{ leave.employee.emp_name }}</strong></td>
+                                <td>{{ leave.get_leave_type_display }}</td>
+                                <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                                <td>{{ leave.reason|truncatechars:40|default:"–" }}</td>
+                                <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted py-4">No rejected leaves.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        'use strict';
+
+        var tiles = document.querySelectorAll('.report-tile');
+
+        function closeAllPanels() {
+            document.querySelectorAll('.detail-panel').forEach(function (p) {
+                p.classList.remove('show');
+            });
+            tiles.forEach(function (t) { t.classList.remove('active'); });
+        }
+
+        function openPanel(targetId, clickedTile) {
+            var panel = document.getElementById(targetId);
+            if (!panel) return;
+
+            if (panel.classList.contains('show')) {
+                panel.classList.remove('show');
+                clickedTile.classList.remove('active');
+                return;
+            }
+
+            closeAllPanels();
+            panel.classList.add('show');
+            clickedTile.classList.add('active');
+
+            setTimeout(function () {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+        }
+
+        tiles.forEach(function (tile) {
+            tile.addEventListener('click', function () {
+                var target = tile.getAttribute('data-target');
+                openPanel(target, tile);
+            });
+        });
+
+        window.closePanel = function (id) {
+            var panel = document.getElementById(id);
+            if (!panel) return;
+            panel.classList.remove('show');
+
+            tiles.forEach(function (t) {
+                if (t.getAttribute('data-target') === id) {
+                    t.classList.remove('active');
+                }
+            });
+        };
+    })();
+</script>
+{% endblock %}

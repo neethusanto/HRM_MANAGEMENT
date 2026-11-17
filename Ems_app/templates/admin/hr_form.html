@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ title }}</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-body">
+
+                <!-- Password requirements banner -->
+                <div class="alert alert-info small d-flex align-items-start gap-2 mb-4">
+                    <i class="bi bi-shield-lock-fill fs-5"></i>
+                    <div>
+                        <strong>Password:</strong> minimum 8 characters.
+                        Password and Confirm Password must match.
+                        <br>
+                        <strong>CV:</strong> PDF or Word file (optional).
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Employee Code -->
+                        <div class="col-md-4">
+                            <label for="{{ form.employee_code.id_for_label }}" class="form-label">
+                                HR ID
+                            </label>
+                            {{ form.employee_code }}
+                            {% if form.employee_code.errors %}
+                                <div class="text-danger small mt-1">{{ form.employee_code.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="col-md-4">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                First Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="col-md-4">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                Last Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            <small class="text-muted">Used as login identifier</small>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="col-md-6">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                            {{ form.phone }}
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div class="col-md-4">
+                            <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                        </div>
+
+                        <!-- Department -->
+                        <div class="col-md-4">
+                            <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                            {{ form.department }}
+                        </div>
+
+                        <!-- Joining Date -->
+                        <div class="col-md-4">
+                            <label for="{{ form.joining_date.id_for_label }}" class="form-label">
+                                Joining Date <span class="text-danger">*</span>
+                            </label>
+                            {{ form.joining_date }}
+                            {% if form.joining_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.joining_date.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Designation -->
+                        <div class="col-md-6">
+                            <label for="{{ form.designation.id_for_label }}" class="form-label">Designation</label>
+                            {{ form.designation }}
+                        </div>
+
+                        <!-- Experience -->
+                        <div class="col-md-6">
+                            <label for="{{ form.experience.id_for_label }}" class="form-label">Experience</label>
+                            {{ form.experience }}
+                        </div>
+
+                        <!-- Current Salary -->
+                        <div class="col-md-6">
+                            <label for="{{ form.current_salary.id_for_label }}" class="form-label">Current Salary</label>
+                            {{ form.current_salary }}
+                            {% if form.current_salary.errors %}
+                                <div class="text-danger small mt-1">{{ form.current_salary.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- CV -->
+                        <div class="col-md-6">
+                            <label for="{{ form.cv.id_for_label }}" class="form-label">Recent CV</label>
+                            {{ form.cv }}
+                            {% if form.instance.cv %}
+                                <small class="text-muted d-block mt-1">
+                                    Current:
+                                    <a href="{{ form.instance.cv.url }}" target="_blank">View CV</a>
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">
+                                Password <span class="text-danger">*</span>
+                            </label>
+                            {{ form.password }}
+                            {% if form.password.help_text %}
+                                <small class="text-muted d-block mt-1">{{ form.password.help_text }}</small>
+                            {% endif %}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <label for="{{ form.confirm_password.id_for_label }}" class="form-label">
+                                Confirm Password <span class="text-danger">*</span>
+                            </label>
+                            {{ form.confirm_password }}
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.confirm_password.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger mt-3">
+                            {{ form.non_field_errors|join:", " }}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2-circle"></i> Save
+                        </button>
+                        <a href="{% url 'Ems_app:hr_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
