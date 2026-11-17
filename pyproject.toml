@@ -18,6 +18,3 @@ dependencies = [
 
 [tool.uv]
 package = false
-
-[tool.vercel.scripts]
-build = "python scripts/vercel_build.py"
