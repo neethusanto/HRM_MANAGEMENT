@@ -31,7 +31,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-5">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-6">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="role-{% if user.is_authenticated %}{{ user.profile.role }}{% else %}guest{% endif %}">
@@ -44,23 +44,60 @@
                 </a>
                 <nav class="sidebar-nav">
                     <a class="sidebar-link" href="{% if user.profile.role == 'admin' %}{% url 'Ems_app:admin_dashboard' %}{% elif user.profile.role == 'hr' %}{% url 'Ems_app:hr_dashboard' %}{% else %}{% url 'Ems_app:employee_dashboard' %}{% endif %}"><i class="bi bi-house-door"></i><span>Home</span></a>
-                    <a class="sidebar-link" href="{% url 'Ems_app:profile' %}"><i class="bi bi-person"></i><span>My Profile</span></a>
-                    {% if user.profile.role == 'employee' %}
-                        <a class="sidebar-link" href="{% url 'Ems_app:employee_attendance' %}"><i class="bi bi-clock-history"></i><span>Attendance</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:employee_attendance_calendar' %}"><i class="bi bi-calendar3"></i><span>Calendar</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:leave_list' %}"><i class="bi bi-inbox"></i><span>My Leave</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:salary_list' %}"><i class="bi bi-currency-rupee"></i><span>My Salary</span></a>
-                    {% else %}
-                        <a class="sidebar-link" href="{% url 'Ems_app:employee_list' %}"><i class="bi bi-people"></i><span>Employees</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:attendance_list' %}"><i class="bi bi-clock-history"></i><span>Attendance</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:leave_list' %}"><i class="bi bi-inbox"></i><span>Leave Requests</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:salary_list' %}"><i class="bi bi-currency-rupee"></i><span>Payroll</span></a>
-                        <a class="sidebar-link" href="{% url 'Ems_app:reports' %}"><i class="bi bi-graph-up"></i><span>Reports</span></a>
-                        {% if user.profile.role == 'admin' %}
-                            <a class="sidebar-link" href="{% url 'Ems_app:department_list' %}"><i class="bi bi-diagram-3"></i><span>Departments</span></a>
-                            <a class="sidebar-link" href="{% url 'Ems_app:hr_list' %}"><i class="bi bi-person-badge"></i><span>HR Users</span></a>
-                        {% endif %}
-                        <a class="sidebar-link" href="{% url 'Ems_app:payslip_request_list' %}"><i class="bi bi-file-earmark-check"></i><span>Payslip Requests</span></a>
+
+                    <section class="sidebar-group">
+                        <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navMe">
+                            <i class="bi bi-person"></i><span>Me</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-subnav" id="navMe" hidden>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:profile' %}"><i class="bi bi-person-vcard"></i><span>My Profile</span></a>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:employee_attendance' %}"><i class="bi bi-clock-history"></i><span>Attendance Log</span></a>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:employee_attendance_calendar' %}"><i class="bi bi-calendar3"></i><span>Calendar</span></a>
+                        </div>
+                    </section>
+
+                    <section class="sidebar-group">
+                        <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navInbox">
+                            <i class="bi bi-inbox"></i><span>Inbox</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-subnav" id="navInbox" hidden>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:leave_list' %}"><i class="bi bi-calendar2-check"></i><span>{% if user.profile.role == 'employee' %}My Leave{% else %}Leave Requests{% endif %}</span></a>
+                            {% if user.profile.role != 'employee' %}<a class="sidebar-sublink" href="{% url 'Ems_app:payslip_request_list' %}"><i class="bi bi-file-earmark-check"></i><span>Payslip Requests</span></a>{% endif %}
+                        </div>
+                    </section>
+
+                    {% if user.profile.role != 'employee' %}
+                        <section class="sidebar-group">
+                            <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navTeam">
+                                <i class="bi bi-people"></i><span>My Team</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                            </button>
+                            <div class="sidebar-subnav" id="navTeam" hidden>
+                                <a class="sidebar-sublink" href="{% url 'Ems_app:employee_list' %}"><i class="bi bi-person-lines-fill"></i><span>Employees</span></a>
+                                <a class="sidebar-sublink" href="{% url 'Ems_app:attendance_list' %}"><i class="bi bi-clock-history"></i><span>Team Attendance</span></a>
+                            </div>
+                        </section>
+                    {% endif %}
+
+                    <section class="sidebar-group">
+                        <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navFinance">
+                            <i class="bi bi-wallet2"></i><span>My Finances</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-subnav" id="navFinance" hidden>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:salary_list' %}"><i class="bi bi-currency-rupee"></i><span>{% if user.profile.role == 'employee' %}My Salary{% else %}Salary Records{% endif %}</span></a>
+                            {% if user.profile.role != 'employee' %}<a class="sidebar-sublink" href="{% url 'Ems_app:reports' %}"><i class="bi bi-graph-up"></i><span>Reports</span></a>{% endif %}
+                        </div>
+                    </section>
+
+                    {% if user.profile.role == 'admin' %}
+                        <section class="sidebar-group">
+                            <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navOrg">
+                                <i class="bi bi-building"></i><span>Org</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                            </button>
+                            <div class="sidebar-subnav" id="navOrg" hidden>
+                                <a class="sidebar-sublink" href="{% url 'Ems_app:department_list' %}"><i class="bi bi-diagram-3"></i><span>Departments</span></a>
+                                <a class="sidebar-sublink" href="{% url 'Ems_app:hr_list' %}"><i class="bi bi-person-badge"></i><span>HR Users</span></a>
+                            </div>
+                        </section>
                     {% endif %}
                 </nav>
             </aside>
@@ -171,6 +208,23 @@
             const toggle = document.getElementById('sidebarToggle');
             const backdrop = document.getElementById('sidebarBackdrop');
             if (!shell || !toggle || !backdrop) return;
+            const groups = Array.from(shell.querySelectorAll('.sidebar-group-toggle'));
+            groups.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const submenu = document.getElementById(button.getAttribute('aria-controls'));
+                    const shouldOpen = button.getAttribute('aria-expanded') !== 'true';
+                    groups.forEach(function (otherButton) {
+                        if (otherButton === button) return;
+                        otherButton.setAttribute('aria-expanded', 'false');
+                        otherButton.classList.remove('active');
+                        const otherMenu = document.getElementById(otherButton.getAttribute('aria-controls'));
+                        if (otherMenu) otherMenu.hidden = true;
+                    });
+                    button.setAttribute('aria-expanded', String(shouldOpen));
+                    button.classList.toggle('active', shouldOpen);
+                    if (submenu) submenu.hidden = !shouldOpen;
+                });
+            });
             function closeSidebar() {
                 shell.classList.remove('sidebar-open');
                 toggle.setAttribute('aria-expanded', 'false');
@@ -184,7 +238,7 @@
                 if (event.key === 'Escape') closeSidebar();
             });
             const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-            const candidates = Array.from(shell.querySelectorAll('.sidebar-link')).map(function (link) {
+            const candidates = Array.from(shell.querySelectorAll('.sidebar-link[href], .sidebar-sublink')).map(function (link) {
                 return { link: link, path: new URL(link.href, window.location.origin).pathname.replace(/\/+$/, '') || '/' };
             }).sort(function (a, b) { return b.path.length - a.path.length; });
             const active = candidates.find(function (item) {
@@ -193,7 +247,20 @@
             if (active) {
                 active.link.classList.add('active');
                 active.link.setAttribute('aria-current', 'page');
+                const group = active.link.closest('.sidebar-group');
+                if (group) {
+                    const groupButton = group.querySelector('.sidebar-group-toggle');
+                    const submenu = group.querySelector('.sidebar-subnav');
+                    if (groupButton) {
+                        groupButton.classList.add('active');
+                        groupButton.setAttribute('aria-expanded', 'true');
+                    }
+                    if (submenu) submenu.hidden = false;
+                }
             }
+            shell.querySelectorAll('.sidebar-sublink').forEach(function (link) {
+                link.addEventListener('click', closeSidebar);
+            });
         })();
     </script>
 
