@@ -28,7 +28,40 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+def _host_list(*values):
+    hosts = []
+    for value in values:
+        for item in (value or '').split(','):
+            host = item.strip().lower().removeprefix('https://').removeprefix('http://').strip('/')
+            if host and host not in hosts:
+                hosts.append(host)
+    return hosts
+
+
+ALLOWED_HOSTS = _host_list(
+    os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1'),
+    'hrm-management-henna.vercel.app',
+    os.environ.get('VERCEL_URL'),
+    os.environ.get('VERCEL_BRANCH_URL'),
+    os.environ.get('VERCEL_PROJECT_PRODUCTION_URL'),
+)
+
+def _origin_list(*values):
+    origins = []
+    for value in values:
+        for item in (value or '').split(','):
+            origin = item.strip().rstrip('/')
+            if origin and not origin.startswith(('http://', 'https://')):
+                origin = f'https://{origin}'
+            if origin and origin not in origins:
+                origins.append(origin)
+    return origins
+
+
+CSRF_TRUSTED_ORIGINS = _origin_list(
+    os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', ''),
+    *(f'https://{host}' for host in ALLOWED_HOSTS if host.endswith('.vercel.app')),
+)
 
 # Biometric / punch-machine API token - override in production env
 DEVICE_TOKEN = os.environ.get('DEVICE_TOKEN', 'ems-device-token-change-me')
