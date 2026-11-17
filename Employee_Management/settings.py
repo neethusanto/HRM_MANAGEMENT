@@ -127,7 +127,12 @@ WSGI_APPLICATION = 'Employee_Management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('POSTGRES_URL')
+    or os.environ.get('POSTGRES_PRISMA_URL')
+    or ''
+).strip()
 if DATABASE_URL:
     database_url = urlparse(DATABASE_URL)
     if database_url.scheme not in ('postgres', 'postgresql', 'postgresql+psycopg'):

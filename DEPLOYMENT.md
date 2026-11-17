@@ -6,8 +6,8 @@ This project uses SQLite for local development. Vercel deployments require a per
 
 Configure these in the Vercel project before deploying:
 
-- `DATABASE_URL`: PostgreSQL connection URL for application requests.
-- `DATABASE_URL_UNPOOLED`: direct PostgreSQL connection URL used by deployment migrations. If your provider has no separate direct URL, use the same URL for both variables.
+- `DATABASE_URL` (or Vercel's `POSTGRES_URL`): PostgreSQL connection URL for application requests.
+- `DATABASE_URL_UNPOOLED` (or Vercel's `POSTGRES_URL_NON_POOLING`): direct PostgreSQL connection URL used by deployment migrations. If your provider has no separate direct URL, use the same URL for both variables.
 - `DJANGO_SECRET_KEY`: a newly generated, private Django signing key.
 - `DJANGO_DEBUG`: set to `False`.
 - `DJANGO_ALLOWED_HOSTS`: comma-separated Vercel and custom domain hostnames, if they are not supplied by Vercel's built-in URL variables.
