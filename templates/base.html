@@ -31,7 +31,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-6">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-7">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="role-{% if user.is_authenticated %}{{ user.profile.role }}{% else %}guest{% endif %}">
@@ -209,33 +209,47 @@
             const backdrop = document.getElementById('sidebarBackdrop');
             if (!shell || !toggle || !backdrop) return;
             const groups = Array.from(shell.querySelectorAll('.sidebar-group-toggle'));
+            function closeMenus() {
+                groups.forEach(function (button) {
+                    button.setAttribute('aria-expanded', 'false');
+                    button.classList.remove('active');
+                    const menu = document.getElementById(button.getAttribute('aria-controls'));
+                    if (menu) menu.hidden = true;
+                });
+            }
+            function positionMenu(button, menu) {
+                if (!button || !menu || menu.hidden) return;
+                const rect = button.getBoundingClientRect();
+                const top = Math.max(8, Math.min(rect.top, window.innerHeight - menu.offsetHeight - 8));
+                menu.style.top = top + 'px';
+            }
             groups.forEach(function (button) {
                 button.addEventListener('click', function () {
                     const submenu = document.getElementById(button.getAttribute('aria-controls'));
                     const shouldOpen = button.getAttribute('aria-expanded') !== 'true';
-                    groups.forEach(function (otherButton) {
-                        if (otherButton === button) return;
-                        otherButton.setAttribute('aria-expanded', 'false');
-                        otherButton.classList.remove('active');
-                        const otherMenu = document.getElementById(otherButton.getAttribute('aria-controls'));
-                        if (otherMenu) otherMenu.hidden = true;
-                    });
+                    closeMenus();
                     button.setAttribute('aria-expanded', String(shouldOpen));
                     button.classList.toggle('active', shouldOpen);
                     if (submenu) submenu.hidden = !shouldOpen;
+                    if (shouldOpen) positionMenu(button, submenu);
                 });
             });
             function closeSidebar() {
                 shell.classList.remove('sidebar-open');
                 toggle.setAttribute('aria-expanded', 'false');
+                closeMenus();
             }
             toggle.addEventListener('click', function () {
                 const open = shell.classList.toggle('sidebar-open');
                 toggle.setAttribute('aria-expanded', String(open));
+                if (!open) closeMenus();
             });
             backdrop.addEventListener('click', closeSidebar);
             document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape') closeSidebar();
+                if (event.key === 'Escape') { closeMenus(); closeSidebar(); }
+            });
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('.sidebar-group')) closeMenus();
             });
             const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
             const candidates = Array.from(shell.querySelectorAll('.sidebar-link[href], .sidebar-sublink')).map(function (link) {
@@ -255,11 +269,23 @@
                         groupButton.classList.add('active');
                         groupButton.setAttribute('aria-expanded', 'true');
                     }
-                    if (submenu) submenu.hidden = false;
+                    if (submenu) {
+                        submenu.hidden = false;
+                        positionMenu(groupButton, submenu);
+                    }
                 }
             }
             shell.querySelectorAll('.sidebar-sublink').forEach(function (link) {
                 link.addEventListener('click', closeSidebar);
+            });
+            window.addEventListener('resize', function () {
+                const openButton = groups.find(function (button) { return button.getAttribute('aria-expanded') === 'true'; });
+                if (openButton) positionMenu(openButton, document.getElementById(openButton.getAttribute('aria-controls')));
+            });
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebar) sidebar.addEventListener('scroll', function () {
+                const openButton = groups.find(function (button) { return button.getAttribute('aria-expanded') === 'true'; });
+                if (openButton) positionMenu(openButton, document.getElementById(openButton.getAttribute('aria-controls')));
             });
         })();
     </script>
