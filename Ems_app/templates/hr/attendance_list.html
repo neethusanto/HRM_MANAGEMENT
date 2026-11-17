@@ -316,7 +316,7 @@
                             {% if att.is_verified %}
                                 <small class="text-success">Verified{% if att.verified_by %} by {{ att.verified_by.get_full_name|default:att.verified_by.username }}{% endif %}</small>
                             {% else %}
-                                <small class="text-warning-emphasis">Pending verification</small>
+                                <span class="status-chip status-pending">Pending verification</span>
                             {% endif %}
                         </td>
                         <td class="text-end action-buttons">

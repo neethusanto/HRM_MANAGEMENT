@@ -27,7 +27,7 @@
             <td>{{ att.check_out|date:"H:i"|default:"—" }}</td>
             <td>{{ att.working_hours }}</td>
             <td><span class="badge {% if att.status == 'present' %}bg-success{% elif att.status == 'absent' %}bg-danger{% elif att.status == 'late' %}bg-warning text-dark{% else %}bg-info{% endif %}">{{ att.get_status_display }}</span></td>
-            <td>{% if att.is_verified %}<span class="text-success">Verified{% if att.verified_by %} by {{ att.verified_by.get_full_name|default:att.verified_by.username }}{% endif %}</span>{% else %}<span class="text-warning-emphasis">Pending</span>{% endif %}</td>
+            <td>{% if att.is_verified %}<span class="status-chip status-approved">Verified{% if att.verified_by %} by {{ att.verified_by.get_full_name|default:att.verified_by.username }}{% endif %}</span>{% else %}<span class="status-chip status-pending">Pending verification</span>{% endif %}</td>
           </tr>
           {% empty %}
           <tr><td colspan="7" class="text-center text-muted py-4">No attendance records yet.</td></tr>

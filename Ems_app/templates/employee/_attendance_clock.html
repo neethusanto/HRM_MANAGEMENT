@@ -14,7 +14,7 @@
         <div class="text-muted">No check-in recorded yet</div>
       {% endif %}
       {% if clock_attendance %}
-        <div class="small mt-1">HR status: {% if clock_attendance.is_verified %}<span class="text-success fw-semibold">Verified</span>{% else %}<span class="text-warning-emphasis">Awaiting verification</span>{% endif %}</div>
+        <div class="small mt-2 d-flex align-items-center gap-2 flex-wrap">HR review: {% if clock_attendance.is_verified %}<span class="status-chip status-approved">Verified</span>{% else %}<span class="status-chip status-pending">Awaiting verification</span>{% endif %}</div>
       {% endif %}
     </div>
     <div>

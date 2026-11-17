@@ -47,7 +47,7 @@
                                 {% if leave.review_response %}<small class="leave-list-reply"><i class="bi bi-chat-left-text me-1"></i>{{ leave.review_response|truncatechars:70 }}</small>{% endif %}
                             </td>
                             <td>
-                                <span class="badge {% if leave.status == 'pending' %}bg-warning{% elif leave.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                <span class="status-chip status-{{ leave.status }}">
                                     {{ leave.get_status_display }}
                                 </span>
                             </td>

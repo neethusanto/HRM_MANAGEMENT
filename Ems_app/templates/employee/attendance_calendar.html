@@ -38,7 +38,7 @@
       <div class="calendar-day {% if not cell.in_month %}outside{% endif %} {% if cell.date == today %}today{% endif %}">
         <div class="d-flex justify-content-between align-items-center">
           <strong>{{ cell.date|date:"j" }}</strong>
-          {% if cell.attendance %}<span class="badge {% if cell.attendance.is_verified %}bg-success{% else %}bg-warning text-dark{% endif %}" title="{% if cell.attendance.is_verified %}Verified{% else %}Awaiting HR verification{% endif %}">{% if cell.attendance.is_verified %}OK{% else %}Pending{% endif %}</span>{% endif %}
+          {% if cell.attendance %}<span class="status-chip {% if cell.attendance.is_verified %}status-approved{% else %}status-pending{% endif %}" title="{% if cell.attendance.is_verified %}Verified{% else %}Awaiting HR verification{% endif %}">{% if cell.attendance.is_verified %}Verified{% else %}Pending{% endif %}</span>{% endif %}
         </div>
         {% if cell.attendance %}
           <div class="calendar-detail small mt-2">

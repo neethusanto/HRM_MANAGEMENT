@@ -22,27 +22,6 @@
         })();
     </script>
 
-    <script>
-        (function () {
-            const shell = document.getElementById('app');
-            const toggle = document.getElementById('sidebarToggle');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            if (!shell || !toggle || !backdrop) return;
-            function closeSidebar() {
-                shell.classList.remove('sidebar-open');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-            toggle.addEventListener('click', function () {
-                const open = shell.classList.toggle('sidebar-open');
-                toggle.setAttribute('aria-expanded', String(open));
-            });
-            backdrop.addEventListener('click', closeSidebar);
-            document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape') closeSidebar();
-            });
-        })();
-    </script>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +31,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-4">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-5">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="role-{% if user.is_authenticated %}{{ user.profile.role }}{% else %}guest{% endif %}">
@@ -64,7 +43,7 @@
                     <span>EMS</span>
                 </a>
                 <nav class="sidebar-nav">
-                    <a class="sidebar-link" href="{% url 'Accounts:dashboard_redirect' %}"><i class="bi bi-house-door"></i><span>Home</span></a>
+                    <a class="sidebar-link" href="{% if user.profile.role == 'admin' %}{% url 'Ems_app:admin_dashboard' %}{% elif user.profile.role == 'hr' %}{% url 'Ems_app:hr_dashboard' %}{% else %}{% url 'Ems_app:employee_dashboard' %}{% endif %}"><i class="bi bi-house-door"></i><span>Home</span></a>
                     <a class="sidebar-link" href="{% url 'Ems_app:profile' %}"><i class="bi bi-person"></i><span>My Profile</span></a>
                     {% if user.profile.role == 'employee' %}
                         <a class="sidebar-link" href="{% url 'Ems_app:employee_attendance' %}"><i class="bi bi-clock-history"></i><span>Attendance</span></a>
@@ -182,6 +161,38 @@
                         applyTheme(e.matches ? 'dark' : 'light');
                     }
                 });
+            }
+        })();
+    </script>
+
+    <script>
+        (function () {
+            const shell = document.getElementById('app');
+            const toggle = document.getElementById('sidebarToggle');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!shell || !toggle || !backdrop) return;
+            function closeSidebar() {
+                shell.classList.remove('sidebar-open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            toggle.addEventListener('click', function () {
+                const open = shell.classList.toggle('sidebar-open');
+                toggle.setAttribute('aria-expanded', String(open));
+            });
+            backdrop.addEventListener('click', closeSidebar);
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') closeSidebar();
+            });
+            const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+            const candidates = Array.from(shell.querySelectorAll('.sidebar-link')).map(function (link) {
+                return { link: link, path: new URL(link.href, window.location.origin).pathname.replace(/\/+$/, '') || '/' };
+            }).sort(function (a, b) { return b.path.length - a.path.length; });
+            const active = candidates.find(function (item) {
+                return currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path + '/'));
+            });
+            if (active) {
+                active.link.classList.add('active');
+                active.link.setAttribute('aria-current', 'page');
             }
         })();
     </script>

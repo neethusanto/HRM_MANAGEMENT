@@ -16,7 +16,7 @@
           <td>{{ item.salary.employee.department|default:"—" }}</td>
           <td>{{ item.salary.salary_month|date:"F Y" }}</td>
           <td>{{ item.requested_at|date:"d M Y, H:i" }}</td>
-          <td><span class="badge {% if item.status == 'approved' %}bg-success{% elif item.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ item.get_status_display }}</span></td>
+          <td><span class="status-chip status-{{ item.status }}">{{ item.get_status_display }}</span></td>
           <td>
             {% if item.status == 'pending' %}
             <form method="post" action="{% url 'Ems_app:payslip_request_review' item.pk 'approve' %}" class="d-flex flex-column gap-2">

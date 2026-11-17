@@ -251,7 +251,7 @@
                             <td>{{ lv.start_date|date:"d-m-Y" }}</td>
                             <td>{{ lv.end_date|date:"d-m-Y" }}</td>
                             <td>
-                                <span class="badge {% if lv.status == 'pending' %}bg-warning{% elif lv.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                <span class="status-chip status-{{ lv.status }}">
                                     {{ lv.get_status_display }}
                                 </span>
                             </td>
