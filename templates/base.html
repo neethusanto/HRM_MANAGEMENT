@@ -31,7 +31,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-9">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=20261117-10">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="role-{% if user.is_authenticated %}{{ user.profile.role }}{% else %}guest{% endif %}">

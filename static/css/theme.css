@@ -703,6 +703,62 @@ html, body {
 .leave-empty-state .leave-type-icon { margin: 0 auto 14px; }
 .leave-empty-state p { color: var(--text-muted); }
 
+/* Unified, restrained indigo palette for the shell, login and dashboards. */
+.app-sidebar { background: #14243a; }
+.sidebar-brand { background: #342f69; }
+.sidebar-link:hover,
+.sidebar-link:focus-visible,
+.sidebar-link.active { background: #203650; border-left-color: #a99cff; }
+.sidebar-subnav { background: #1b3048; border-color: rgba(255,255,255,.1); }
+.sidebar-sublink:hover,
+.sidebar-sublink:focus-visible,
+.sidebar-sublink.active { background: #29435f; }
+.app-topbar { background: linear-gradient(105deg, #443984 0%, #594ca5 58%, #6559b6 100%); }
+.topbar-avatar { background: #397fb7; }
+
+.login-hero-head { background: linear-gradient(125deg, #302b62 0%, #4d438e 55%, #6472b8 100%); }
+.auth-admin .auth-card-head { background: linear-gradient(125deg, #302b62, #514793); }
+.auth-hr .auth-card-head { background: linear-gradient(125deg, #315d70, #397f89); }
+.auth-employee .auth-card-head { background: linear-gradient(125deg, #38527e, #5275a7); }
+.role-card-admin .role-card-icon { background: linear-gradient(140deg, #4d438e, #7165bb); box-shadow: 0 8px 20px rgba(55,48,112,.2); }
+.role-card-hr .role-card-icon { background: linear-gradient(140deg, #397582, #58a0a0); box-shadow: 0 8px 20px rgba(48,112,120,.18); }
+.role-card-employee .role-card-icon { background: linear-gradient(140deg, #486b9a, #6f91bc); box-shadow: 0 8px 20px rgba(55,91,140,.2); }
+
+/* Dashboard KPI cards use soft, coordinated tints with clear readable values. */
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white {
+    border: 1px solid var(--kpi-border) !important;
+    border-left: 4px solid var(--kpi-accent) !important;
+    border-radius: 13px;
+    background: var(--kpi-bg) !important;
+    color: var(--kpi-text) !important;
+    box-shadow: var(--shadow-sm);
+}
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white::after { background: var(--kpi-glow); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white .card-title {
+    color: var(--kpi-text); opacity: .78; letter-spacing: .055em;
+}
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white h2 { color: var(--kpi-text); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white > .card-body > i { color: var(--kpi-accent); opacity: .68; }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-primary { --kpi-bg:#f0effb; --kpi-border:#dedbf4; --kpi-accent:#6358a9; --kpi-text:#2e2a4f; --kpi-glow:rgba(99,88,169,.08); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-success { --kpi-bg:#edf7f2; --kpi-border:#d4eadc; --kpi-accent:#3d8964; --kpi-text:#244b39; --kpi-glow:rgba(61,137,100,.08); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-info { --kpi-bg:#edf5f8; --kpi-border:#d4e7ec; --kpi-accent:#43859a; --kpi-text:#274b57; --kpi-glow:rgba(67,133,154,.08); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-warning { --kpi-bg:#fbf5e9; --kpi-border:#efe2c4; --kpi-accent:#b07c2d; --kpi-text:#60491f; --kpi-glow:rgba(176,124,45,.08); }
+.app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-danger { --kpi-bg:#fbefef; --kpi-border:#f0d8d8; --kpi-accent:#b85d62; --kpi-text:#653437; --kpi-glow:rgba(184,93,98,.08); }
+
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white {
+    background: var(--kpi-dark-bg) !important;
+    border-color: var(--kpi-dark-border) !important;
+    border-left-color: var(--kpi-accent) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white .card-title,
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.text-white h2 { color: var(--text) !important; }
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-primary { --kpi-dark-bg:#242239; --kpi-dark-border:#393552; --kpi-accent:#a99cff; }
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-success { --kpi-dark-bg:#1d2b27; --kpi-dark-border:#31463d; --kpi-accent:#7ac49a; }
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-info { --kpi-dark-bg:#1d2a31; --kpi-dark-border:#30424a; --kpi-accent:#7bb4c2; }
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-warning { --kpi-dark-bg:#30291e; --kpi-dark-border:#4b3e2a; --kpi-accent:#d5ad68; }
+[data-theme="dark"] .app-main .row.g-3.mb-4 > [class*="col-"] > .card.bg-danger { --kpi-dark-bg:#302224; --kpi-dark-border:#4a3032; --kpi-accent:#d88b8e; }
+
 @media (max-width: 767.98px) {
     .leave-summary-grid { grid-template-columns: 1fr; gap: 9px; }
     .leave-summary-card { min-height: 64px; }
