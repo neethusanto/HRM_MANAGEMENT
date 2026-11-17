@@ -498,19 +498,153 @@
         .input-group-icon .form-control { height: 50px; }
         .login-extra { flex-direction: column; align-items: flex-start; gap: 10px; }
     }
+
+    /* Brand-aligned responsive login treatment */
+    body.role-guest .app-main > .container-fluid { max-width: 100% !important; }
+    .split-login {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(410px, .95fr);
+        background: var(--bg-body);
+    }
+    .split-login__left { min-height: 100vh; background: #29264f; }
+    .split-login__left img.split-bg {
+        opacity: .82;
+        filter: brightness(.7) saturate(.82) contrast(1.04);
+        transform: scale(1.025);
+    }
+    .split-login__left::after {
+        background:
+            radial-gradient(ellipse at 78% 20%, rgba(154, 137, 240, .42), transparent 40%),
+            linear-gradient(135deg, rgba(26, 25, 66, .78), rgba(54, 46, 119, .72) 54%, rgba(17, 25, 52, .9));
+    }
+    .split-login__left-content { min-height: 100vh; padding: clamp(28px, 4.2vw, 68px); }
+    .brand-tagline { font-size: 1.05rem; letter-spacing: .01em; }
+    .brand-tagline .brand-mark {
+        background: rgba(255,255,255,.12);
+        border-color: rgba(255,255,255,.22);
+        box-shadow: 0 12px 28px rgba(11, 10, 38, .2);
+    }
+    .hero-copy h1 { max-width: 640px; font-size: clamp(2.1rem, 4.1vw, 3.5rem); line-height: 1.12; }
+    .hero-copy p { max-width: 520px; color: rgba(255,255,255,.84); }
+    .hero-features { gap: 10px; }
+    .hero-features span { padding: 8px 11px; border: 1px solid rgba(255,255,255,.17); border-radius: 999px; background: rgba(255,255,255,.08); }
+    .hero-features i { color: #c0b8ff; }
+    .login-visual-card {
+        position: absolute;
+        z-index: 3;
+        right: clamp(22px, 3vw, 46px);
+        bottom: clamp(24px, 4vh, 42px);
+        width: min(290px, 36%);
+        padding: 17px;
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 16px;
+        color: #fff;
+        background: rgba(27, 27, 70, .62);
+        box-shadow: 0 18px 44px rgba(8, 9, 33, .28);
+        backdrop-filter: blur(14px);
+    }
+    .login-visual-card__heading { display: flex; align-items: center; gap: 11px; }
+    .login-visual-card__icon {
+        width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto;
+        border-radius: 12px; color: #fff; background: linear-gradient(140deg, #8879e2, #5c4eb4); font-size: 1.1rem;
+    }
+    .login-visual-card__heading strong { display: block; font-size: .88rem; }
+    .login-visual-card__heading small { display: block; margin-top: 2px; color: rgba(255,255,255,.7); font-size: .7rem; }
+    .login-visual-card__items { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+    .login-visual-card__items span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px; background: rgba(255,255,255,.1); font-size: .68rem; }
+    .login-visual-card__items i { color: #c0b8ff; }
+    .split-login__right { padding: clamp(24px, 4vw, 58px); background: var(--bg-body); }
+    .split-login__right::before { opacity: .7; }
+    .login-form-wrap {
+        max-width: 470px;
+        padding: clamp(26px, 3vw, 42px);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: var(--bg-surface);
+        box-shadow: 0 22px 65px rgba(34, 32, 83, .11);
+    }
+    .form-head { margin-bottom: 26px; }
+    .welcome-badge { color: #5142ae; background: #f0edff; border-color: #ded8ff; }
+    .welcome-badge i { color: #6758c7; }
+    .form-head h2 { color: var(--text); font-size: clamp(1.7rem, 2.4vw, 2.15rem); }
+    .form-head h2 .gradient-text { background-image: linear-gradient(135deg, #7869dc, #5142ae); }
+    .form-head p { color: var(--text-muted); }
+    .login-form-wrap .form-label { color: var(--text-secondary); }
+    .input-group-icon .form-control {
+        background: var(--bg-surface-alt);
+        border-color: var(--border);
+        border-radius: 11px;
+        color: var(--text);
+    }
+    .input-group-icon .form-control:focus { border-color: #8274df; box-shadow: 0 0 0 4px rgba(103,88,199,.14); }
+    .input-group-icon .form-control:focus ~ .input-icon { color: #6758c7; }
+    .login-btn { background: linear-gradient(130deg, #7565d1, #5142ae); box-shadow: 0 10px 22px rgba(81,66,174,.23); }
+    .login-btn::before { background: linear-gradient(130deg, #8577df, #5a4bb8); }
+    .login-extra a { color: #5b4ab4; }
+    .login-extra a:hover { color: #44358f; }
+    .login-foot-links a:hover { color: #5b4ab4; background: rgba(103,88,199,.08); }
+    .login-foot-links { display: none; }
+    .login-access-help { margin: 20px 0 0; color: var(--text-muted); font-size: .82rem; text-align: center; }
+    .security-notice { background: #f6f4ff; border-color: #e2ddfa; color: #514b6b; }
+    .security-notice i, .security-notice strong { color: #6555bd; }
+    [data-theme="dark"] .split-login__right { background: var(--bg-body); }
+    [data-theme="dark"] .login-form-wrap { background: var(--bg-surface); border-color: var(--border); box-shadow: 0 22px 65px rgba(0,0,0,.28); }
+    [data-theme="dark"] .welcome-badge { color: #d2caff; background: rgba(123,105,220,.16); border-color: rgba(169,156,255,.28); }
+    [data-theme="dark"] .welcome-badge i { color: #b6aaff; }
+    [data-theme="dark"] .input-group-icon .form-control { background: var(--bg-surface-alt); border-color: var(--border); color: var(--text); }
+    [data-theme="dark"] .input-group-icon .form-control:focus { background: var(--bg-surface); border-color: #a99cff; box-shadow: 0 0 0 4px rgba(169,156,255,.14); }
+    [data-theme="dark"] .login-btn { color: #fff; }
+    [data-theme="dark"] .login-extra a { color: #b6aaff; }
+    [data-theme="dark"] .security-notice { background: rgba(123,105,220,.12); border-color: rgba(169,156,255,.22); color: #d7d2f0; }
+    [data-theme="dark"] .security-notice i, [data-theme="dark"] .security-notice strong { color: #c0b8ff; }
+    @media (max-width: 991.98px) {
+        .split-login { display: flex; min-height: 100vh; }
+        .split-login__left { height: 300px; min-height: 300px; }
+        .split-login__left-content { min-height: 300px; padding: 26px clamp(22px, 5vw, 54px); }
+        .hero-copy h1 { font-size: clamp(1.7rem, 4vw, 2.35rem); }
+        .hero-copy p { max-width: 600px; }
+        .login-visual-card { display: none; }
+        .split-login__right { flex: 1 1 auto; padding: 34px 20px 44px; }
+        .login-form-wrap { max-width: 500px; }
+    }
+    @media (max-width: 575.98px) {
+        .split-login { min-height: 100vh; }
+        .split-login__left { height: 230px; min-height: 230px; }
+        .split-login__left-content { min-height: 230px; padding: 20px 22px; }
+        .brand-tagline .brand-mark { width: 36px; height: 36px; }
+        .hero-copy h1 { font-size: 1.62rem; }
+        .hero-copy p { font-size: .83rem; line-height: 1.45; }
+        .split-login__right { padding: 22px 14px 32px; }
+        .login-form-wrap { padding: 24px 20px; border-radius: 17px; }
+        .login-foot-links { margin-top: 22px; padding-top: 16px; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="split-login">
 
-    <!-- ===================== LEFT: image + particles ===================== -->
+    <!-- ===================== LEFT: branded hero ===================== -->
     <div class="split-login__left">
         <img class="split-bg"
              src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80"
-             alt="Office background">
+             alt="Modern collaborative office workspace"
+             fetchpriority="high" decoding="async">
 
         <canvas id="particle-canvas"></canvas>
+
+        <div class="login-visual-card" aria-hidden="true">
+            <div class="login-visual-card__heading">
+                <span class="login-visual-card__icon"><i class="bi bi-grid-1x2-fill"></i></span>
+                <span><strong>People operations</strong><small>One connected workspace</small></span>
+            </div>
+            <div class="login-visual-card__items">
+                <span><i class="bi bi-clock-history"></i> Attendance</span>
+                <span><i class="bi bi-calendar2-check"></i> Leave</span>
+                <span><i class="bi bi-currency-rupee"></i> Payroll</span>
+            </div>
+        </div>
 
         <div class="split-login__left-content">
             <div class="brand-tagline">
@@ -519,15 +653,15 @@
             </div>
 
             <div class="hero-copy">
-                <h1>Manage your workforce,<br>effortlessly.</h1>
+                <h1>Everything your people team needs, in one place.</h1>
                 <p>
                     Attendance, leave, payroll and employee records — all in one place.
-                    Attendance is captured automatically from your biometric device.
+                    Manage attendance, leave, payroll, and employee records from one secure workspace.
                 </p>
                 <div class="hero-features mt-4">
-                    <span><i class="bi bi-check-circle-fill"></i> Biometric sync</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Role-based access</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Real-time reports</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Clear attendance records</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Simple approvals</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Payroll visibility</span>
                 </div>
             </div>
 
@@ -547,8 +681,8 @@
                     <i class="bi bi-shield-lock-fill"></i>
                     Secure Access
                 </div>
-                <h2>Access <span class="gradient-text">Admin Panel</span></h2>
-                <p>Enter your administrative credentials to access the management dashboard.</p>
+                <h2>Sign in to <span class="gradient-text">EMS</span></h2>
+                <p>Use your work account to open your role-based workspace.</p>
             </div>
 
             <!-- MESSAGES -->
@@ -561,17 +695,18 @@
             {% endif %}
 
             <!-- FORM -->
-            <form method="post" autocomplete="off" novalidate>
+            <form method="post" autocomplete="on">
                 {% csrf_token %}
 
-                <!-- Admin Email or Username -->
+                <!-- Work email or username -->
                 <div class="mb-3">
-                    <label for="username" class="form-label">Admin Email or Username</label>
+                    <label for="username" class="form-label">Work email or username</label>
                     <div class="input-group-icon">
                         <i class="bi bi-person-badge-fill input-icon"></i>
                         <input type="text" name="username" id="username"
                                class="form-control"
-                               placeholder="neethu.ks@knovistatechnologies.com"
+                               placeholder="name@company.com"
+                               autocomplete="username"
                                required autofocus>
                     </div>
                 </div>
@@ -584,6 +719,7 @@
                         <input type="password" name="password" id="password"
                                class="form-control"
                                placeholder="Enter your password"
+                               autocomplete="current-password"
                                required>
                         <button type="button" class="toggle-password"
                                 onclick="togglePassword()"
@@ -593,28 +729,18 @@
                     </div>
                 </div>
 
-                <!-- Keep signed in / Reset Password -->
-                <div class="login-extra">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">Keep me signed in</label>
-                    </div>
-                    <a href="#">Reset Password</a>
-                </div>
-
                 <!-- Security notice -->
                 <div class="security-notice">
                     <i class="bi bi-shield-exclamation"></i>
                     <div>
-                        This is a <strong>secure administrative area</strong>. All access
-                        attempts are logged and monitored.
+                        Sign in with your work account. Your role determines which workspace and records you can access.
                     </div>
                 </div>
 
                 <!-- Submit -->
                 <button type="submit" class="btn login-btn w-100">
                     <i class="bi bi-shield-lock-fill"></i>
-                    <span>Access Admin Panel</span>
+                    <span>Sign in</span>
                 </button>
             </form>
 
@@ -632,6 +758,7 @@
                     <i class="bi bi-shield-check"></i> Security Center
                 </a>
             </div>
+            <p class="login-access-help">Need help signing in? Contact your HR team.</p>
 
             <div class="login-copyright">
                 &copy; {% now "Y" %} EMS Console &middot; All rights reserved
@@ -683,9 +810,9 @@ function togglePassword() {
 
     const COLORS = [
         'rgba(255, 255, 255, 0.9)',
-        'rgba(79, 195, 247, 0.9)',
-        'rgba(25, 118, 210, 0.9)',
-        'rgba(179, 229, 252, 0.85)'
+        'rgba(192, 184, 255, 0.9)',
+        'rgba(132, 116, 223, 0.85)',
+        'rgba(233, 230, 255, 0.85)'
     ];
 
     function resize() {
@@ -723,7 +850,7 @@ function togglePassword() {
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 130) {
                     const alpha = (1 - dist / 130) * 0.28;
-                    ctx.strokeStyle = `rgba(179, 229, 252, ${alpha})`;
+                    ctx.strokeStyle = `rgba(209, 202, 255, ${alpha})`;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
