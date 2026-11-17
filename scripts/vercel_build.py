@@ -16,10 +16,10 @@ def main():
     elif not database_url:
         print('Skipping preview migrations; configure a branch-specific DATABASE_URL_UNPOOLED to migrate a preview database.')
         return 0
-    if not database_url:
+    if not database_url and not os.environ.get('DB_HOST'):
         raise RuntimeError(
             'Production deployment requires a persistent PostgreSQL database. '
-            'Connect a Vercel Postgres/Neon database and set DATABASE_URL.'
+            'Set DATABASE_URL or the DB_HOST/DB_NAME/DB_USER/DB_PASSWORD variables.'
         )
     if not os.environ.get('DJANGO_SECRET_KEY'):
         raise RuntimeError('Production deployment requires the DJANGO_SECRET_KEY environment variable.')
@@ -27,7 +27,8 @@ def main():
         raise RuntimeError('Set DJANGO_DEBUG=False for a production deployment.')
 
     environment = os.environ.copy()
-    environment['DATABASE_URL'] = database_url
+    if database_url:
+        environment['DATABASE_URL'] = database_url
     subprocess.run(
         [sys.executable, 'manage.py', 'migrate', '--noinput'],
         check=True,

@@ -153,6 +153,24 @@ if DATABASE_URL:
             'OPTIONS': database_options,
         },
     }
+elif os.environ.get('DB_HOST'):
+    database_options = {}
+    if IS_VERCEL:
+        database_options['sslmode'] = os.environ.get('DB_SSLMODE', 'require')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'Hrm_management'),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ['DB_HOST'],
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 0 if IS_VERCEL else int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+            'CONN_HEALTH_CHECKS': True,
+            'DISABLE_SERVER_SIDE_CURSORS': True,
+            'OPTIONS': database_options,
+        },
+    }
 elif IS_VERCEL or not DEBUG:
     raise ImproperlyConfigured('Set DATABASE_URL to a persistent PostgreSQL database in production.')
 else:
