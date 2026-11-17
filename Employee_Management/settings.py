@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 import os
+from urllib.parse import parse_qsl, unquote, urlparse
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # Supply a unique DJANGO_SECRET_KEY through the deployment environment.
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-local-development-key-not-for-production',
-)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+IS_VERCEL = bool(os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV'))
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False' if IS_VERCEL else 'True').strip().lower() in ('1', 'true', 'yes')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
+if not SECRET_KEY:
+    if IS_VERCEL or not DEBUG:
+        raise ImproperlyConfigured('Set DJANGO_SECRET_KEY in the deployment environment.')
+    SECRET_KEY = 'django-insecure-local-development-key-not-for-production'
+if IS_VERCEL and DEBUG:
+    raise ImproperlyConfigured('DJANGO_DEBUG must be False on Vercel.')
 
 def _host_list(*values):
     hosts = []
@@ -63,8 +68,9 @@ CSRF_TRUSTED_ORIGINS = _origin_list(
     *(f'https://{host}' for host in ALLOWED_HOSTS if host.endswith('.vercel.app')),
 )
 
-# Biometric / punch-machine API token - override in production env
-DEVICE_TOKEN = os.environ.get('DEVICE_TOKEN', 'ems-device-token-change-me')
+# Use a dedicated device token where configured. The Django secret is a secure
+# fallback for deployments that have not configured a separate punch-machine key.
+DEVICE_TOKEN = os.environ.get('DEVICE_TOKEN') or SECRET_KEY
 
 # Office check-in geofence. Set these in the environment to enable office
 # check-in; the server validates submitted browser coordinates against them.
@@ -121,12 +127,45 @@ WSGI_APPLICATION = 'Employee_Management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+if DATABASE_URL:
+    database_url = urlparse(DATABASE_URL)
+    if database_url.scheme not in ('postgres', 'postgresql', 'postgresql+psycopg'):
+        raise ImproperlyConfigured('DATABASE_URL must use PostgreSQL (postgres:// or postgresql://).')
+    database_options = dict(parse_qsl(database_url.query, keep_blank_values=True))
+    database_options.setdefault('sslmode', 'require')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': unquote(database_url.path.lstrip('/')),
+            'USER': unquote(database_url.username or ''),
+            'PASSWORD': unquote(database_url.password or ''),
+            'HOST': database_url.hostname or '',
+            'PORT': str(database_url.port or ''),
+            'CONN_MAX_AGE': 0 if IS_VERCEL else int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+            'CONN_HEALTH_CHECKS': True,
+            'DISABLE_SERVER_SIDE_CURSORS': True,
+            'OPTIONS': database_options,
+        },
     }
-}
+elif IS_VERCEL or not DEBUG:
+    raise ImproperlyConfigured('Set DATABASE_URL to a persistent PostgreSQL database in production.')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 3600
 
 
 # Password validation
