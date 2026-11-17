@@ -319,10 +319,25 @@ def employee_list(request):
 
 
 @login_required
-@admin_or_hr_required
 def team_calendar(request):
-    """Monthly team attendance and leave overview followed by the team directory."""
+    """Show the organization calendar to HR/admin and a department team to employees."""
     today = timezone.localdate()
+    role = getattr(getattr(request.user, 'profile', None), 'role', None)
+    if role not in ('admin', 'hr', 'employee'):
+        return redirect('Accounts:dashboard_redirect')
+    employees_query = Employee.objects.filter(status='active').select_related('department')
+    team_department = None
+    if role == 'employee':
+        try:
+            current_employee = request.user.employee
+        except Employee.DoesNotExist:
+            messages.error(request, 'No employee profile is linked to your account.')
+            return redirect('Accounts:dashboard_redirect')
+        team_department = current_employee.department
+        if team_department:
+            employees_query = employees_query.filter(department=team_department)
+        else:
+            employees_query = employees_query.filter(pk=current_employee.pk)
     try:
         year = int(request.GET.get('year') or today.year)
         month = int(request.GET.get('month') or today.month)
@@ -335,7 +350,7 @@ def team_calendar(request):
     month_end = date(year, month, calendar.monthrange(year, month)[1])
     previous_month = month_start - timedelta(days=1)
     next_month = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
-    employees = list(Employee.objects.filter(status='active').select_related('department').order_by('emp_name'))
+    employees = list(employees_query.order_by('emp_name'))
     employee_ids = [employee.pk for employee in employees]
     attendance_by_key = {
         (item.employee_id, item.date): item
@@ -447,6 +462,8 @@ def team_calendar(request):
     return render(request, 'hr/team_calendar.html', {
         'employees': employees,
         'employee_count': len(employees),
+        'user_role': role,
+        'team_department': team_department,
         'month_days': month_days,
         'month_label': month_start.strftime('%B %Y'),
         'selected_month': month,

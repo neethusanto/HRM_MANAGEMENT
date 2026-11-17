@@ -66,18 +66,18 @@
                         </div>
                     </section>
 
-                    {% if user.profile.role != 'employee' %}
-                        <section class="sidebar-group">
-                            <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navTeam">
-                                <i class="bi bi-people"></i><span>My Team</span><i class="bi bi-chevron-down sidebar-chevron"></i>
-                            </button>
-                            <div class="sidebar-subnav" id="navTeam" hidden>
-                                <a class="sidebar-sublink" href="{% url 'Ems_app:team_calendar' %}"><i class="bi bi-calendar3-week"></i><span>Team Calendar</span></a>
+                    <section class="sidebar-group">
+                        <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navTeam">
+                            <i class="bi bi-people"></i><span>My Team</span><i class="bi bi-chevron-down sidebar-chevron"></i>
+                        </button>
+                        <div class="sidebar-subnav" id="navTeam" hidden>
+                            <a class="sidebar-sublink" href="{% url 'Ems_app:team_calendar' %}"><i class="bi bi-calendar3-week"></i><span>Team Calendar</span></a>
+                            {% if user.profile.role != 'employee' %}
                                 <a class="sidebar-sublink" href="{% url 'Ems_app:employee_list' %}"><i class="bi bi-person-lines-fill"></i><span>Employees</span></a>
                                 <a class="sidebar-sublink" href="{% url 'Ems_app:attendance_list' %}"><i class="bi bi-clock-history"></i><span>Team Attendance</span></a>
-                            </div>
-                        </section>
-                    {% endif %}
+                            {% endif %}
+                        </div>
+                    </section>
 
                     <section class="sidebar-group">
                         <button class="sidebar-link sidebar-group-toggle" type="button" aria-expanded="false" aria-controls="navFinance">
