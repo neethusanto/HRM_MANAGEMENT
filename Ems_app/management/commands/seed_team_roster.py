@@ -1,11 +1,11 @@
 """Add the supplied Knovista team roster to any configured Django database."""
 import re
 import unicodedata
+from datetime import date
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.utils import timezone
 
 from Ems_app.models import Department, Employee
 
@@ -61,7 +61,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        today = timezone.localdate()
+        joining_date = date(2026, 10, 1)
         dry_run = options['dry_run']
         created = 0
         skipped = 0
@@ -91,7 +91,7 @@ class Command(BaseCommand):
                 suffix += 1
 
             if dry_run:
-                self.stdout.write(f'ADD   {full_name} | {department_name} | {designation} | {email} | {today}')
+                self.stdout.write(f'ADD   {full_name} | {department_name} | {designation} | {email} | {joining_date}')
             else:
                 user = User.objects.create_user(
                     username=email,
@@ -109,7 +109,7 @@ class Command(BaseCommand):
                     emp_name=full_name,
                     email=email,
                     department=department,
-                    joining_date=today,
+                    joining_date=joining_date,
                     designation=designation,
                     location='Operational Office',
                     current_salary=0,
