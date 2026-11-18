@@ -42,6 +42,9 @@ def _host_list(*values):
 
 ALLOWED_HOSTS = _host_list(
     os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1'),
+    # Vercel supplies the active deployment hostname automatically. Including
+    # it here supports production and preview URLs without pinning a domain.
+    os.environ.get('VERCEL_URL', ''),
 )
 
 def _origin_list(*values):
@@ -58,6 +61,7 @@ def _origin_list(*values):
 
 CSRF_TRUSTED_ORIGINS = _origin_list(
     os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', ''),
+    os.environ.get('VERCEL_URL', ''),
 )
 
 # Use a dedicated device token where configured. The Django secret is a secure
