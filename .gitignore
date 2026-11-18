@@ -47,7 +47,6 @@ htmlcov/
 coverage.xml
 
 # Local tooling and editor state
-.vercel/
 .vscode/
 .idea/
 .DS_Store
