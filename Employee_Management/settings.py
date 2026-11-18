@@ -42,8 +42,10 @@ def _host_list(*values):
 
 ALLOWED_HOSTS = _host_list(
     os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1'),
-    # Vercel supplies the active deployment hostname automatically. Including
-    # it here supports production and preview URLs without pinning a domain.
+    # Vercel creates a distinct hostname for each deployment and preview.
+    # Covers generated preview URLs even when the runtime omits VERCEL_URL.
+    '.vercel.app',
+    # Include the active deployment hostname when the platform provides it.
     os.environ.get('VERCEL_URL', ''),
 )
 
