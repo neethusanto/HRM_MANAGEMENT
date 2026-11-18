@@ -23,7 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # Supply a unique DJANGO_SECRET_KEY through the deployment environment.
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').strip().lower() in ('1', 'true', 'yes')
+IS_VERCEL = bool(os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV'))
+DEBUG = os.environ.get(
+    'DJANGO_DEBUG', 'False' if IS_VERCEL else 'True'
+).strip().lower() in ('1', 'true', 'yes')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
     if not DEBUG:
@@ -126,22 +129,27 @@ WSGI_APPLICATION = 'Employee_Management.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 DATABASE_URL = (
-    os.environ.get('DATABASE_URL', '')
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('POSTGRES_URL')
+    or os.environ.get('POSTGRES_PRISMA_URL')
+    or ''
 ).strip()
 if DATABASE_URL:
     database_url = urlparse(DATABASE_URL)
     if database_url.scheme not in ('postgres', 'postgresql', 'postgresql+psycopg'):
         raise ImproperlyConfigured('DATABASE_URL must use PostgreSQL (postgres:// or postgresql://).')
     database_options = dict(parse_qsl(database_url.query, keep_blank_values=True))
+    if IS_VERCEL:
+        database_options.setdefault('sslmode', os.environ.get('DB_SSLMODE', 'require'))
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': unquote(database_url.path.lstrip('/')),
+            'NAME': os.environ.get('DB_NAME') or unquote(database_url.path.lstrip('/')),
             'USER': unquote(database_url.username or ''),
             'PASSWORD': unquote(database_url.password or ''),
             'HOST': database_url.hostname or '',
             'PORT': str(database_url.port or ''),
-            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '0' if IS_VERCEL else '60')),
             'CONN_HEALTH_CHECKS': True,
             'DISABLE_SERVER_SIDE_CURSORS': True,
             'OPTIONS': database_options,
@@ -149,8 +157,9 @@ if DATABASE_URL:
     }
 elif os.environ.get('DB_HOST'):
     database_options = {}
-    if os.environ.get('DB_SSLMODE'):
-        database_options['sslmode'] = os.environ['DB_SSLMODE']
+    sslmode = os.environ.get('DB_SSLMODE') or ('require' if IS_VERCEL else '')
+    if sslmode:
+        database_options['sslmode'] = sslmode
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -159,7 +168,7 @@ elif os.environ.get('DB_HOST'):
             'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ['DB_HOST'],
             'PORT': os.environ.get('DB_PORT', '5432'),
-            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '60')),
+            'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', '0' if IS_VERCEL else '60')),
             'CONN_HEALTH_CHECKS': True,
             'DISABLE_SERVER_SIDE_CURSORS': True,
             'OPTIONS': database_options,
